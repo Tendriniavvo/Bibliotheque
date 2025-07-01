@@ -1,9 +1,4 @@
 -- 2. Création des tables de référence
-CREATE TABLE Roles (
-    id_role SERIAL PRIMARY KEY,
-    nom_role VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT
-);
 
 CREATE TABLE Profils_Adherent (
     id_profil SERIAL PRIMARY KEY,
@@ -58,12 +53,7 @@ CREATE TABLE Utilisateurs (
     id_utilisateur SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     mot_de_passe_hash VARCHAR(255) NOT NULL,
-    id_role INT NOT NULL,
-    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    dernier_login TIMESTAMP,
-    est_actif BOOLEAN NOT NULL DEFAULT TRUE,
-    est_verifie BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (id_role) REFERENCES Roles(id_role)
+    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Création des tables liées aux utilisateurs
@@ -72,12 +62,9 @@ CREATE TABLE Adherents (
     id_utilisateur INT UNIQUE,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
-    telephone VARCHAR(20),
+    date_naissance DATE NOT NULL,
     date_inscription DATE NOT NULL DEFAULT CURRENT_DATE,
     id_profil INT NOT NULL,
-    date_paiement DATE,
-    date_fin_validite DATE,
-    mode_paiement VARCHAR(50),
     FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur),
     FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil)
 );
@@ -128,6 +115,7 @@ CREATE TABLE Droits_Emprunt_Specifiques (
     id_droit SERIAL PRIMARY KEY,
     id_livre INT NOT NULL,
     id_profil INT NOT NULL,
+    age INT,
     emprunt_domicile_autorise BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (id_livre, id_profil),
     FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
