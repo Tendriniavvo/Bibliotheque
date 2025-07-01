@@ -1,10 +1,11 @@
-package com.film.services;
+package com.bibliotheque.services;
 
 
-import com.film.entities.Employe;
-import com.film.repositories.EmployeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.bibliotheque.entities.Employe;
+import com.bibliotheque.repositories.EmployeRepository;
 
 import java.util.List;
 @Service

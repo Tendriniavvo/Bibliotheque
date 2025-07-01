@@ -1,4 +1,4 @@
-package com.film.entities;
+package com.bibliotheque.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

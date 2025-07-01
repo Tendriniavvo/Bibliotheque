@@ -1,0 +1,19 @@
+livre / exemplaire / pret / adherent ou profil(Etudiant,Anonyme,prof)
+tsy ny livre no indramina fa ny exemplaire
+pret(a domicile sy sur place)
+par profil no miteny ohatra oe ny etuduant afaka maka boky sur place 4 sy a domicile 2 mandritra ny 7j(parametrable)
+misy tsy afaka oentina mody afa tsy ny prof
+tsy tafaverinao le body de penalise enao (tsy mahazo mihoatra ny duree)
+inscription (ny membre dia mila mandoha vola aloha de mila validité),misy abonnement ,duree abonnement
+misy cota findraman boky oh oe 5 ihany ny mpianatra 
+
+
+je sius en train de creer un projet de gestion de bibliotheque et voici la description du projet :
+les entité sont : livre / exemplaire / pret / adherent ou profil ( Etudiant ,Anonyme , professeur)
+le pret a deux types : pret sur place et pret a domicile 
+la regle de gestion est par profil ,par exemple pour l'etudiant ,,le pret maximum sur place est 4 livre  pendant 4 heure (duree de pret) et le pret a domicile est 2 livres pendant 3 jours
+il a des livre qu'on ne peut pas emprunter a domicile sauf les prof
+il est penalisé si on ne rend pas les livre dans une duree de pret 
+et sur l'inscription ,,il faut payer l'abonnement et l'abonnement a une durée par exemple journalier ,hebdomadaire ,mensuel et annuel
+chaque emprunteur a un cota ,par exempla 5 pour les etudiants donc il ne peut pas depassé ce cota 
+donnner toutes les fonctionnalité possible du projet 

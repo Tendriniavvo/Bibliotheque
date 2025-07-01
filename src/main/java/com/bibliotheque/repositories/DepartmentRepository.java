@@ -1,7 +1,8 @@
-package com.film.repositories;
+package com.bibliotheque.repositories;
 
-import com.film.entities.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.bibliotheque.entities.Department;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
   }

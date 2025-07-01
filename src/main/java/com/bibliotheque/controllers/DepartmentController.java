@@ -1,14 +1,15 @@
-package com.film.controllers;
+package com.bibliotheque.controllers;
 
 
 
-import com.film.entities.Department;
-import com.film.services.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.bibliotheque.entities.Department;
+import com.bibliotheque.services.DepartmentService;
 
 import java.util.List;
 
