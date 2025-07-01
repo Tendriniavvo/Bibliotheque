@@ -15,9 +15,6 @@ CREATE TABLE Profils_Adherent (
     jours_penalite_par_retard INT NOT NULL DEFAULT 1
 );
 
-
-
-
 CREATE TABLE Auteurs (
     id_auteur SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -149,17 +146,6 @@ CREATE TABLE Emprunts (
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
 );
 
-
-CREATE TABLE Mvt_Reservation (
-    id_mvt_reservation SERIAL PRIMARY KEY,
-    id_reservation INT NOT NULL,
-    id_statut_nouveau INT NOT NULL, -- Le statut vers lequel la réservation a transité
-    date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_reservation) REFERENCES Reservations(id_reservation) ON DELETE CASCADE,
-    FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Reservation(id_statut)
-);
-
-
 CREATE TABLE Reservations (
     id_reservation SERIAL PRIMARY KEY,
     id_livre INT NOT NULL,
@@ -171,6 +157,19 @@ CREATE TABLE Reservations (
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent) ON DELETE CASCADE,
     FOREIGN KEY (id_statut) REFERENCES Statuts_Reservation(id_statut)
 );
+
+
+
+CREATE TABLE Mvt_Reservation (
+    id_mvt_reservation SERIAL PRIMARY KEY,
+    id_reservation INT NOT NULL,
+    id_statut_nouveau INT NOT NULL, -- Le statut vers lequel la réservation a transité
+    date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_reservation) REFERENCES Reservations(id_reservation) ON DELETE CASCADE,
+    FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Reservation(id_statut)
+);
+
+
 
 CREATE TABLE Penalites (
     id_penalite SERIAL PRIMARY KEY,
