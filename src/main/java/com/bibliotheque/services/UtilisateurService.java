@@ -32,7 +32,6 @@ public class UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
-    // 💡 Ce que tu veux :
     public Adherent saveAdherent(Adherent adherent) {
         return adherentRepository.save(adherent);
     }
