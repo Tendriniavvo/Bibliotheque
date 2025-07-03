@@ -6,6 +6,6 @@ import java.util.Optional;
 
 
 public interface AdherentRepository extends JpaRepository<Adherent, Integer> {
-
+    Optional<Adherent> findByIdUtilisateur(Integer idUtilisateur);
     
 }
