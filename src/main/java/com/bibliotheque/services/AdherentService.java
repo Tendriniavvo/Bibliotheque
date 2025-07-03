@@ -22,4 +22,9 @@ public class AdherentService {
         return repository.save(adherent);
     }
 
+    public Optional<Adherent> findByUtilisateurId(Integer idUtilisateur) {
+        return repository.findByIdUtilisateur(idUtilisateur);
+    }
+
+
 }

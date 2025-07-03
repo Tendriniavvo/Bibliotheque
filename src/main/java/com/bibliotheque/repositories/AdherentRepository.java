@@ -6,4 +6,6 @@ import java.util.Optional;
 
 
 public interface AdherentRepository extends JpaRepository<Adherent, Integer> {
+
+    
 }
