@@ -1,19 +1,11 @@
 -- 2. Création des tables de référence
-CREATE TABLE Roles (
-    id_role SERIAL PRIMARY KEY,
-    nom_role VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT
-);
 
 CREATE TABLE Profils_Adherent (
     id_profil SERIAL PRIMARY KEY,
     nom_profil VARCHAR(100) NOT NULL UNIQUE,
-    quota_emprunts_simultanes INT NOT NULL DEFAULT 3,
-    duree_pret_domicile_jours INT NOT NULL DEFAULT 21,
-    duree_pret_sur_place_heures INT NOT NULL DEFAULT 3,
-    peut_prolonger_pret BOOLEAN NOT NULL DEFAULT TRUE,
-    jours_penalite_par_retard INT NOT NULL DEFAULT 1
+    quota_emprunts_simultanes INT NOT NULL DEFAULT 3
 );
+
 
 CREATE TABLE Auteurs (
     id_auteur SERIAL PRIMARY KEY,
@@ -58,12 +50,7 @@ CREATE TABLE Utilisateurs (
     id_utilisateur SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     mot_de_passe_hash VARCHAR(255) NOT NULL,
-    id_role INT NOT NULL,
-    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    dernier_login TIMESTAMP,
-    est_actif BOOLEAN NOT NULL DEFAULT TRUE,
-    est_verifie BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (id_role) REFERENCES Roles(id_role)
+    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Création des tables liées aux utilisateurs
@@ -72,12 +59,9 @@ CREATE TABLE Adherents (
     id_utilisateur INT UNIQUE,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
-    telephone VARCHAR(20),
+    date_naissance  DATE NOT NULL,
     date_inscription DATE NOT NULL DEFAULT CURRENT_DATE,
     id_profil INT NOT NULL,
-    date_paiement DATE,
-    date_fin_validite DATE,
-    mode_paiement VARCHAR(50),
     FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur),
     FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil)
 );
@@ -87,7 +71,6 @@ CREATE TABLE Bibliothecaires (
     id_utilisateur INT UNIQUE NOT NULL,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
-    matricule VARCHAR(50) UNIQUE NOT NULL,
     FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
 );
 
@@ -128,23 +111,32 @@ CREATE TABLE Droits_Emprunt_Specifiques (
     id_droit SERIAL PRIMARY KEY,
     id_livre INT NOT NULL,
     id_profil INT NOT NULL,
+    age INT ,
+    emprunt_surplace_autorise BOOLEAN NOT NULL DEFAULT TRUE,
     emprunt_domicile_autorise BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (id_livre, id_profil),
     FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
     FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil) ON DELETE CASCADE
 );
 
+
+CREATE TABLE Type_emprunts(
+    id_type_emprunt SERIAL PRIMARY KEY,
+    nom_type VARCHAR(50)
+);
+
 CREATE TABLE Emprunts (
     id_emprunt SERIAL PRIMARY KEY,
     id_exemplaire INT NOT NULL,
     id_adherent INT NOT NULL,
-    date_emprunt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_retour_prevue DATE NOT NULL,
-    date_retour_reelle DATE,
-    prolongations INT DEFAULT 0,
+    id_type_emprunt INT NOT NULL,
+    date_emprunt TIMESTAMP NOT NULL,
+    date_retour_prevue TIMESTAMP NOT NULL,
+    FOREIGN KEY (id_type_emprunt) REFERENCES Type_emprunts(id_type_emprunt),
     FOREIGN KEY (id_exemplaire) REFERENCES Exemplaires(id_exemplaire),
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
 );
+
 
 CREATE TABLE Reservations (
     id_reservation SERIAL PRIMARY KEY,
@@ -157,8 +149,6 @@ CREATE TABLE Reservations (
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent) ON DELETE CASCADE,
     FOREIGN KEY (id_statut) REFERENCES Statuts_Reservation(id_statut)
 );
-
-
 
 CREATE TABLE Mvt_Reservation (
     id_mvt_reservation SERIAL PRIMARY KEY,
@@ -176,7 +166,7 @@ CREATE TABLE Penalites (
     id_emprunt INT NOT NULL,
     id_adherent INT NOT NULL,
     date_debut DATE NOT NULL,
-    date_fin DATE NOT NULL,
+    jour INT NOT NULL,
     raison VARCHAR(255),
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt),
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
