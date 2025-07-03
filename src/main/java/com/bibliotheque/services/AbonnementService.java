@@ -17,4 +17,8 @@ public class AbonnementService {
     public List<Abonnement> getAll(){
         return repository.findAll();
     }
+
+    public Abonnement save(Abonnement abonnement) {
+        return repository.save(abonnement);
+    }
 }

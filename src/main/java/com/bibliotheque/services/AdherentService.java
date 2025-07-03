@@ -26,5 +26,9 @@ public class AdherentService {
         return repository.findByIdUtilisateur(idUtilisateur);
     }
 
+    public Optional<Adherent> findById(Integer id) {
+        return repository.findById(id);
+    }
+
 
 }

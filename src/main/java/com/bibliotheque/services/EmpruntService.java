@@ -13,4 +13,16 @@ public class EmpruntService {
     public EmpruntService(EmpruntRepository repository) {
         this.repository = repository;
     }
+
+    public Optional<Emprunt> findById(Integer id){
+        return repository.findById(id);
+    }
+
+    public List<Emprunt> getAll(){
+        return repository.findAll();
+    }
+
+    public Emprunt save(Emprunt emprunt) {
+        return repository.save(emprunt);
+    }
 }

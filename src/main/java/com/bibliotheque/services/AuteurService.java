@@ -14,4 +14,12 @@ public class AuteurService {
         this.repository = repository;
     }
 
+    public List<Auteur> getAll() {
+        return repository.findAll();
+    }
+
+    public Auteur save(Auteur auteur) {
+        return repository.save(auteur);
+    }   
+
 }

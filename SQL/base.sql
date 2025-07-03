@@ -183,3 +183,13 @@ CREATE TABLE Penalites (
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
 );
 
+
+----- Table des prolongements d'emprunt----
+CREATE TABLE Prolongements (
+    id_prolongement SERIAL PRIMARY KEY,
+    id_emprunt INT NOT NULL,
+    date_fin TIMESTAMP NOT NULL,
+    date_prolongement TIMESTAMP NOT NULL,
+    FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE
+);
+

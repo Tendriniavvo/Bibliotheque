@@ -151,6 +151,14 @@
         input[type="text"],
         input[type="number"],
         input[type="date"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
         select {
             width: 100%;
             padding: 10px;
@@ -197,10 +205,19 @@
         <div class="sidebar">
             <h2>Bibliothèque</h2>
             <a href="/abonnement/liste">Abonnement</a>
-            <a href="add-book.html">Ajouter un Livre</a>
-            <a href="#">Gestion des Utilisateurs</a>
-            <a href="#">Prêts en Cours</a>
-            <a href="#">Paramètres</a>
+            <a href="/penalite/liste">Penalite</a>
+
+            <h2>Livre</h2>
+            <a href="/auteur/liste">Auteur</a>
+            <a href="/editeur/liste">Edideur</a>
+            <a href="/livre/liste">Livre</a>
+            <a href="/exemplaire/liste">Exemplaire</a>
+
+            <h2>Pret</h2>
+            <a href="/emprunt/liste">Emprunt</a>
+            <a href="/prolongement/liste">Prolongement</a>
+            <a href="/reservation/liste">Reservation</a>
+    
         </div>
         <div class="content">
             

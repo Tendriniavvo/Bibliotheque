@@ -19,16 +19,6 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>1</td>
-            <td>Jean Dupont</td>
-            <td>2025-01-01</td>
-            <td>2026-01-01</td>
-            <td class="action-buttons">
-                <button class="edit-button" onclick="location.href='edit-abonnement.html?id=1'">Modifier</button>
-                <button class="delete-button" onclick="confirm('Voulez-vous vraiment supprimer cet abonnement ?')">Supprimer</button>
-            </td>
-        </tr>
         <% for (Abonnement abonnement : abonnements ) { %>
         <tr>
             <td><%= abonnement.getId() %></td>

@@ -11,7 +11,6 @@ import org.springframework.web.servlet.ModelAndView;
 import jakarta.servlet.http.HttpSession;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.*;
 
 @Controller
@@ -24,9 +23,8 @@ public class AbonnementController {
     @Autowired
     private AdherentService adherentService;
 
-
     @GetMapping("/liste")
-    public ModelAndView listeAbonnement(){
+    public ModelAndView listeAbonnement() {
         List<Abonnement> abonnements = abonnementService.getAll();
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
         mv.addObject("abonnements", abonnements);
@@ -35,14 +33,34 @@ public class AbonnementController {
     }
 
     @GetMapping("/form")
-    public ModelAndView formAbonnement(){
+    public ModelAndView formAbonnement() {
         List<Adherent> adherents = adherentService.getAll();
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
-        mv.addObject("adherents",adherents);
+        mv.addObject("adherents", adherents);
         mv.addObject("contentPage", "abonnementForm.jsp");
         return mv;
     }
 
     @PostMapping("/save")
-    public ModelAndView save()
+    public String saveAbonnement(
+            @RequestParam("idAdherent") Integer idAdherent,
+            @RequestParam("dateDebut") String dateDebut,
+            @RequestParam("dateFin") String dateFin) {
+
+        Abonnement abonnement = new Abonnement();
+
+        Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
+        if (adherentOpt.isEmpty()) {
+            return "redirect:/abonnement/form?error=adherentNotFound";
+        }
+
+        abonnement.setAdherent(adherentOpt.get());
+        abonnement.setDateDebut(LocalDate.parse(dateDebut));
+        abonnement.setDateFin(LocalDate.parse(dateFin));
+
+        abonnementService.save(abonnement);
+
+        return "redirect:/abonnement/liste";
+    }
+
 }
