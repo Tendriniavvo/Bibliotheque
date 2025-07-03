@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.bibliotheque.entities.Adherent" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Optional" %>
+<%
+    Adherent profil = (Adherent) request.getAttribute("profil");
+    String contentPage = (String) request.getAttribute("contentPage");
+%>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -13,7 +21,7 @@
         <nav class="sidebar">
             <div class="user-profile">
                 <img src="images/default-avatar.png" alt="Photo de profil" class="profile-img">
-                <h3>Bienvenue, ${user.prenom}</h3>
+                <h3>Bienvenue, ${profil.nom}</h3>
             </div>
             <ul class="nav-links">
                 <li class="active">
@@ -38,44 +46,9 @@
         </nav>
 
         <main class="content">
-            <header class="welcome-header">
-                <h1>Mon Espace</h1>
-                <div class="search-bar">
-                    <input type="text" placeholder="Rechercher un livre...">
-                    <button><i class="fas fa-search"></i></button>
-                </div>
-            </header>
+            
+            <jsp:include page="<%= contentPage %>" />
 
-            <div class="quick-stats">
-                <div class="stat-box">
-                    <i class="fas fa-book-reader"></i>
-                    <div class="stat-details">
-                        <h3>Emprunts en cours</h3>
-                        <p>${empruntsEnCours}</p>
-                    </div>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-clock"></i>
-                    <div class="stat-details">
-                        <h3>À rendre bientôt</h3>
-                        <p>${prochainesEcheances}</p>
-                    </div>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-bookmark"></i>
-                    <div class="stat-details">
-                        <h3>Réservations</h3>
-                        <p>${reservationsEnCours}</p>
-                    </div>
-                </div>
-            </div>
-
-            <section class="recent-books">
-                <h2>Livres recommandés</h2>
-                <div class="books-grid">
-                    <!-- Les livres seront injectés dynamiquement ici -->
-                </div>
-            </section>
         </main>
     </div>
 </body>
