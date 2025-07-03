@@ -51,7 +51,7 @@ public class AuthController {
         Optional<Bibliothecaire> bibliothecaireOpt = bibliothecaireService.findByUtilisateurId(utilisateur.getId());
         if (bibliothecaireOpt.isPresent()) {
             ModelAndView mv = new ModelAndView("bibliothecaire/template");
-            mv.addObject("contentPage", "dashboard.jsp");
+            mv.addObject("contentPage", "form.jsp");
             mv.addObject("bibliothecaire", bibliothecaireOpt.get());
             return mv;
         }

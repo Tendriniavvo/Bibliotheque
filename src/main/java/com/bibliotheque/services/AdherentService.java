@@ -14,7 +14,7 @@ public class AdherentService {
         this.repository = repository;
     }
 
-    public List<Adherent> getAbonnement(){
+    public List<Adherent> getAll(){
         return repository.findAll();
     }
 
