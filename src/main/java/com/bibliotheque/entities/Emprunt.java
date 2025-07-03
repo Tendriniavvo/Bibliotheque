@@ -1,0 +1,30 @@
+package com.bibliotheque.entities;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "emprunts")
+public class Emprunt {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "emprunts_id_gen")
+    @SequenceGenerator(name = "emprunts_id_gen", sequenceName = "emprunts_id_emprunt_seq", allocationSize = 1)
+    @Column(name = "id_emprunt", nullable = false)
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_exemplaire", nullable = false)
+    private Exemplaire idExemplaire;
+
+    @Column(name = "date_emprunt", nullable = false)
+    private Instant dateEmprunt;
+
+    @Column(name = "date_retour_prevue", nullable = false)
+    private Instant dateRetourPrevue;
+
+}
