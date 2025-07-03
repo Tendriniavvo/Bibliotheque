@@ -136,7 +136,18 @@ CREATE TABLE Emprunts (
     FOREIGN KEY (id_exemplaire) REFERENCES Exemplaires(id_exemplaire),
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
 );
-
+CREATE TABLE Statuts_Emprunt (
+    id_statut SERIAL PRIMARY KEY,
+    code_statut VARCHAR(20) NOT NULL UNIQUE
+);
+CREATE TABLE Mvt_Emprunt (
+    id_mvt_emprunt SERIAL PRIMARY KEY,
+    id_emprunt INT NOT NULL,
+    id_statut_nouveau INT NOT NULL, -- Le statut vers lequel l'emprunt a transité
+    date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE,
+    FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Emprunt(id_statut)
+);
 
 CREATE TABLE Reservations (
     id_reservation SERIAL PRIMARY KEY,
