@@ -208,7 +208,7 @@
             <h2><i class="fas fa-book"></i> Bibliothèque</h2>
             <a href="/client/livres" class="<%= contentPage.contains("livres") ? "active" : "" %>"><i class="fas fa-book-open"></i> Livres Disponibles</a>
             <a href="/client/emprunts" class="<%= contentPage.contains("emprunts") ? "active" : "" %>"><i class="fas fa-book-reader"></i> Mes Emprunts</a>
-            <a href="/reservation/form" class="<%= contentPage.contains("reservations") ? "active" : "" %>"><i class="fas fa-calendar-check"></i> Mes Réservations</a>
+            <a href="/client/reservations" class="<%= contentPage.contains("reservations") ? "active" : "" %>"><i class="fas fa-calendar-check"></i> Mes Réservations</a>
             <a href="/client/profil" class="<%= contentPage.contains("profil") ? "active" : "" %>"><i class="fas fa-user"></i> Mon Profil</a>
         </div>
         <div class="content">
@@ -219,8 +219,40 @@
                 </div>
                 <a href="/logout" class="logout">Déconnexion</a>
             </div>
-            
-            <jsp:include page="<%= contentPage %>" />
+            <h1>Livres Disponibles</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher un livre par titre ou auteur..." name="search">
+                <button type="submit"><i class="fas fa-search"></i> Rechercher</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Année</th>
+                        <th>ISBN</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (Livre livre : livres) { %>
+                    <tr>
+                        <td><%= livre.getTitre() %></td>
+                        <td><%= livre.getAuteur() %></td>
+                        <td><%= livre.getAnneePublication() %></td>
+                        <td><%= livre.getIsbn() %></td>
+                        <td class="action-buttons">
+                            <button onclick="location.href='/client/reserver?id=<%= livre.getId() %>'">Réserver</button>
+                        </td>
+                    </tr>
+                    <% } %>
+                    <% if (livres.isEmpty()) { %>
+                    <tr>
+                        <td colspan="5">Aucun livre disponible pour le moment.</td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

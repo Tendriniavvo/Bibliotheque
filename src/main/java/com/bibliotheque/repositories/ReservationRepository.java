@@ -3,7 +3,9 @@ package com.bibliotheque.repositories;
 import com.bibliotheque.entities.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
+import java.lang.StackWalker.Option;
 import java.util.List;
 
 @Repository
@@ -17,4 +19,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     // Récupère les réservations par statut
     List<Reservation> findByStatutId(Integer idStatut);
+
+    public Optional<Reservation> findById(Integer id);
 }

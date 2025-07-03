@@ -17,6 +17,7 @@
         <tr>
             <th>ID</th>
             <th>ID Emprunt</th>
+            <th>Adherent</th>
             <th>Date Fin</th>
             <th>Date de Prolongement</th>
             <th>Actions</th>
@@ -27,6 +28,7 @@
         <tr>
             <td><%= p.getId() %></td>
             <td><%= p.getEmprunt() != null ? p.getEmprunt().getId() : "" %></td>
+            <td><%= p.getEmprunt() != null ? p.getEmprunt().getAdherent().getNom() : "" %></td>
             <td><%= p.getDateFin() != null ? formatter.format(p.getDateFin()) : "" %></td>
             <td><%= p.getDateProlongement() != null ? formatter.format(p.getDateProlongement()) : "" %></td>
             <td class="action-buttons">
