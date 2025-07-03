@@ -30,17 +30,15 @@
 <form action="/register" method="post">
     <h2>Créer un compte</h2>
 
-    <!-- Choix du type d'inscription -->
+
     <div class="form-group">
         <label for="profilType">Type d'inscription</label>
         <select id="profilType" name="profilType" required>
-            <option value="">-- Sélectionnez un type --</option>
-            <option value="Client">Client</option>
+            <option value="Client" selected>Client</option>
             <option value="Bibliothecaire">Bibliothecaire</option>
         </select>
     </div>
 
-    <!-- Email + mot de passe -->
     <div class="form-group">
         <label for="email">Adresse email</label>
         <input type="email" id="email" name="email" required/>
@@ -51,7 +49,7 @@
         <input type="password" id="motDePasseHash" name="motDePasseHash" required/>
     </div>
 
-    <!-- Nom, Prénom -->
+
     <div class="form-group">
         <label for="nom">Nom</label>
         <input type="text" id="nom" name="nom" required/>
@@ -62,16 +60,15 @@
         <input type="text" id="prenom" name="prenom" required/>
     </div>
 
-    <!-- Date de naissance (client uniquement) -->
-    <div class="form-group" id="dateNaissanceGroup" style="display:none;">
+
+    <div class="form-group" id="dateNaissanceGroup">
         <label for="dateNaissance">Date de naissance</label>
         <input type="date" id="dateNaissance" name="dateNaissance"/>
     </div>
 
-    <!-- Select dynamique des profils -->
-    <div class="form-group">
+    <div class="form-group" id="idProfilGroup">
         <label for="idProfil">Profil (en base)</label>
-        <select id="idProfil" name="idProfil" required>
+        <select id="idProfil" name="idProfil">
             <option value="">-- Sélectionnez un profil --</option>
             <% if (profils != null) {
                 for (ProfilsAdherent profil : profils) { %>
@@ -90,16 +87,23 @@
 <script>
     const profilTypeSelect = document.getElementById("profilType");
     const dateNaissanceGroup = document.getElementById("dateNaissanceGroup");
+    const idProfilGroup = document.getElementById("idProfilGroup");
 
-    profilTypeSelect.addEventListener("change", function () {
-        const selectedValue = this.value.toLowerCase();
+    function updateFormVisibility() {
+        const selectedValue = profilTypeSelect.value.toLowerCase();
 
         if (selectedValue === "client") {
-            dateNaissanceGroup.style.display = "block";
-        } else {
-            dateNaissanceGroup.style.display = "none";
+            dateNaissanceGroup.classList.remove("hidden");
+            idProfilGroup.classList.remove("hidden");
+        } else if (selectedValue === "bibliothecaire") {
+            dateNaissanceGroup.classList.add("hidden");
+            idProfilGroup.classList.add("hidden");
         }
-    });
+    }
+
+    profilTypeSelect.addEventListener("change", updateFormVisibility);
+
+    updateFormVisibility();
 </script>
 
 </body>

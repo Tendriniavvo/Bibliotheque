@@ -46,17 +46,20 @@ public class AuthController {
 
         Utilisateur utilisateur = utilisateurOpt.get();
 
-        // ➕ Stocker l'utilisateur connecté dans la session
         session.setAttribute("userId", utilisateur.getId());
 
-        // Vérifier s’il s’agit d’un bibliothécaire
         Optional<Bibliothecaire> bibliothecaireOpt = bibliothecaireService.findByUtilisateurId(utilisateur.getId());
         if (bibliothecaireOpt.isPresent()) {
-            return new ModelAndView("bibliothecaire/home");
+            ModelAndView mv = new ModelAndView("bibliothecaire/template");
+            mv.addObject("contentPage", "dashboard.jsp");
+            mv.addObject("bibliothecaire", bibliothecaireOpt.get());
+            return mv;
         }
-
-        // Sinon, redirection côté client
-        return new ModelAndView("adherent/home");
+        ModelAndView mv = new ModelAndView("adherent/template");
+        mv.addObject("contentPage", "dash.jsp");
+        Optional<Adherent> adherentOpt = adherentService.findByUtilisateurId(utilisateur.getId());
+        mv.addObject("profil", adherentOpt.get());
+        return mv;
     }
 
     @PostMapping("/register")
