@@ -18,7 +18,8 @@ public class AdherentService {
         return repository.findAll();
     }
 
-    public Adherent saveAdherent(Adherent adherent) {
+    public Adherent save(Adherent adherent) {
         return repository.save(adherent);
     }
+
 }

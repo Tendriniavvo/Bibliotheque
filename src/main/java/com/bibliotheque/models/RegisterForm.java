@@ -1,14 +1,16 @@
 package com.bibliotheque.models;
 
 public class RegisterForm {
+
     private String email;
     private String motDePasseHash;
     private String nom;
     private String prenom;
     private String dateNaissance; // au format yyyy-MM-dd
-    private Integer idProfil;
-
+    private Integer idProfil;     // utilisé si Client
+    private String profilType;    // "Client" ou "Bibliothecaire"
     // Getters & Setters
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
@@ -26,4 +28,8 @@ public class RegisterForm {
 
     public Integer getIdProfil() { return idProfil; }
     public void setIdProfil(Integer idProfil) { this.idProfil = idProfil; }
+
+    public String getProfilType() { return profilType; }
+    public void setProfilType(String profilType) { this.profilType = profilType; }
+
 }

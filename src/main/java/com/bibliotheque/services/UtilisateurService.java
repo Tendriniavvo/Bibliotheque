@@ -32,7 +32,5 @@ public class UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
-    public Adherent saveAdherent(Adherent adherent) {
-        return adherentRepository.save(adherent);
-    }
+    
 }

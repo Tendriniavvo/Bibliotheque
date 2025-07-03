@@ -15,13 +15,12 @@ public class Bibliothecaire {
     @Column(name = "id_bibliothecaire", nullable = false)
     private Integer id;
 
+    @Column(name = "id_utilisateur", nullable = false, unique = true)
+    private Integer idUtilisateur;
+
     @Column(name = "nom", nullable = false, length = 100)
     private String nom;
 
     @Column(name = "prenom", nullable = false, length = 100)
     private String prenom;
-
-    @Column(name = "matricule", nullable = false, length = 50)
-    private String matricule;
-
 }

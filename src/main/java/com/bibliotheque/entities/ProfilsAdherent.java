@@ -23,20 +23,5 @@ public class ProfilsAdherent {
     @Column(name = "quota_emprunts_simultanes", nullable = false)
     private Integer quotaEmpruntsSimultanes;
 
-    @ColumnDefault("21")
-    @Column(name = "duree_pret_domicile_jours", nullable = false)
-    private Integer dureePretDomicileJours;
-
-    @ColumnDefault("3")
-    @Column(name = "duree_pret_sur_place_heures", nullable = false)
-    private Integer dureePretSurPlaceHeures;
-
-    @ColumnDefault("true")
-    @Column(name = "peut_prolonger_pret", nullable = false)
-    private Boolean peutProlongerPret = false;
-
-    @ColumnDefault("1")
-    @Column(name = "jours_penalite_par_retard", nullable = false)
-    private Integer joursPenaliteParRetard;
 
 }
