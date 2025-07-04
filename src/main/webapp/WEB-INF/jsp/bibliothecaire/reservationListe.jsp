@@ -15,9 +15,8 @@
             <th>ID</th>
             <th>Livre</th>
             <th>Adhérent</th>
-            <th>Statut</th>
             <th>Date Demande</th>
-            <th>Date Expiration</th>
+            <th>Date à reserver</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -27,9 +26,8 @@
                 <td><%= reservation.getId() %></td>
                 <td><%= reservation.getLivre() != null ? reservation.getLivre().getTitre() : "" %></td>
                 <td><%= reservation.getAdherent() != null ? reservation.getAdherent().getNom() : "" %></td>
-                <td><%= reservation.getStatut() != null ? reservation.getStatut().getCodeStatut() : "" %></td>
                 <td><%= reservation.getDateDemande() != null ? reservation.getDateDemande() : "" %></td>
-                <td><%= reservation.getDateExpiration() != null ? reservation.getDateExpiration() : "" %></td>
+                <td><%= reservation.getDateAReserver() != null ? reservation.getDateAReserver() : "" %></td>
                 <td>
                     <button onclick="location.href='/reservation/edit?id=<%= reservation.getId() %>'">Modifier</button>
                     <button onclick="if(confirm('Voulez-vous vraiment supprimer cette réservation ?')) location.href='/reservation/delete?id=<%= reservation.getId() %>'">Supprimer</button>

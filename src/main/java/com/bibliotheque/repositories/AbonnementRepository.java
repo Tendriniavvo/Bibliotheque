@@ -18,4 +18,8 @@ public interface AbonnementRepository extends JpaRepository<Abonnement, Integer>
            "AND a.dateFin >= :currentDate")
     Optional<Abonnement> findActiveAbonnementByAdherent(@Param("idAdherent") Integer idAdherent, 
                                                        @Param("currentDate") LocalDate currentDate);
+
+       
+                                                       
+       public boolean existsByAdherentIdAndDateDebutLessThanEqualAndDateFinGreaterThanEqual(Integer adherentId, LocalDate dateDebut, LocalDate dateFin);
 }

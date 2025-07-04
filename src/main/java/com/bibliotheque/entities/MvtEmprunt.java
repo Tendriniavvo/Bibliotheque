@@ -8,6 +8,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -32,5 +33,5 @@ public class MvtEmprunt {
 
     @Column(name = "date_mouvement", nullable = false, updatable = false)
     @ColumnDefault("CURRENT_TIMESTAMP")
-    private Instant dateMouvement;
+    private LocalDate dateMouvement;
 }

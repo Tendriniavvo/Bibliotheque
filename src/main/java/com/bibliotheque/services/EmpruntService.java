@@ -7,10 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,6 +64,10 @@ public class EmpruntService {
         return empruntRepository.findAll();
     }
 
+    public long countActiveEmpruntsByLivreAndDate(Integer livreId, LocalDate date) {
+        return empruntRepository.countActiveEmpruntsByLivreAndDate(livreId, date);
+    }
+
     @Transactional
     public Emprunt save(Emprunt emprunt) throws EmpruntException {
         // 1. Recharge l'adhérent pour avoir le profil complet
@@ -73,7 +75,7 @@ public class EmpruntService {
                 .orElseThrow(() -> new EmpruntException("Adhérent introuvable"));
 
         // 2. Vérification des pénalités en cours
-        LocalDate dateEmprunt = emprunt.getDateEmprunt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate dateEmprunt = emprunt.getDateEmprunt();
         List<Penalite> penalites = penaliteRepository.findActivePenalitesByAdherent(adherent.getId(), dateEmprunt);
         for (Penalite penalite : penalites) {
             LocalDate debut = penalite.getDateDebut();
@@ -100,10 +102,10 @@ public class EmpruntService {
         for (Emprunt e : empruntsExemplaire) {
             String statut = getLastStatutForEmprunt(e.getId());
             if ("En cours".equalsIgnoreCase(statut) || "Retard".equalsIgnoreCase(statut)) {
-                LocalDateTime debutExist = e.getDateEmprunt().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                LocalDateTime finExist = e.getDateRetourPrevue().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                LocalDateTime debutNouveau = emprunt.getDateEmprunt().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                LocalDateTime finNouveau = emprunt.getDateRetourPrevue().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDate debutExist = e.getDateEmprunt();
+                LocalDate finExist = e.getDateRetourPrevue();
+                LocalDate debutNouveau = emprunt.getDateEmprunt();
+                LocalDate finNouveau = emprunt.getDateRetourPrevue();
                 boolean chevauche = !finNouveau.isBefore(debutExist) && !debutNouveau.isAfter(finExist);
                 if (chevauche) {
                     throw new EmpruntException("Un autre emprunt pour cet exemplaire chevauche la période demandée (statut 'En cours' ou 'Retard').");
@@ -119,10 +121,16 @@ public class EmpruntService {
             throw new EmpruntException("Aucun exemplaire disponible pour cet emprunt.");
         }
 
-        // 5. Vérification de l'abonnement actif
-        boolean hasActiveAbonnement = abonnementRepository.findActiveAbonnementByAdherent(adherent.getId(), dateEmprunt).isPresent();
-        if (!hasActiveAbonnement) {
+        // 5. Vérification de l'abonnement actif pour toute la période de l'emprunt
+        LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue();
+        Optional<Abonnement> abonnementOpt = abonnementRepository.findActiveAbonnementByAdherent(adherent.getId(), dateEmprunt);
+        if (abonnementOpt.isEmpty()) {
             throw new EmpruntException("L'adhérent n'a pas d'abonnement actif à la date de l'emprunt.");
+        }
+        Abonnement abonnement = abonnementOpt.get();
+        LocalDate dateFinAbonnement = abonnement.getDateFin();
+        if (dateRetourPrevue.isAfter(dateFinAbonnement)) {
+            throw new EmpruntException("La date de retour prévue (" + dateRetourPrevue + ") dépasse la fin de l'abonnement (" + dateFinAbonnement + ").");
         }
 
         // 6. Vérification de l'existence du type d'emprunt
@@ -130,13 +138,12 @@ public class EmpruntService {
                 .orElseThrow(() -> new EmpruntException("Le type d'emprunt spécifié n'existe pas."));
 
         // 7. Vérification des jours fériés
-        LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue().atZone(ZoneId.systemDefault()).toLocalDate();
         if (joursFeriesRepository.existsByDateFerie(dateEmprunt) || joursFeriesRepository.existsByDateFerie(dateRetourPrevue)) {
             throw new EmpruntException("L'emprunt ou le retour prévu tombe sur un jour férié.");
         }
 
         // 8. Vérification des réservations actives
-        List<Reservation> reservations = reservationRepository.findByLivreIdAndStatutId(exemplaire.getLivre().getId(), 1);
+        List<Reservation> reservations = reservationRepository.findByLivreId(exemplaire.getLivre().getId());
         if (!reservations.isEmpty() && reservations.stream().noneMatch(r -> r.getAdherent().getId().equals(adherent.getId()))) {
             throw new EmpruntException("Le livre est réservé par un autre adhérent.");
         }
@@ -159,28 +166,24 @@ public class EmpruntService {
 
         // 12. Enregistrer le mouvement d'emprunt avec statut 'En cours'
         StatutEmprunt statutEnCours = statutEmpruntRepository.findByCodeStatut("En cours")
-                .orElseThrow(() -> new EmpruntException("Statut 'En cours' introuvable"));
+                .orElseGet(() -> {
+                    StatutEmprunt newStatut = new StatutEmprunt();
+                    newStatut.setCodeStatut("En cours");
+                    newStatut.setCodeStatut("Emprunt en cours"); // Assurez-vous que ce setter existe
+                    return statutEmpruntRepository.save(newStatut);
+                });
         MvtEmprunt mvt = new MvtEmprunt();
         mvt.setEmprunt(savedEmprunt);
         mvt.setStatutNouveau(statutEnCours);
-        mvt.setDateMouvement(emprunt.getDateEmprunt());
+        mvt.setDateMouvement(emprunt.getDateEmprunt()); // Utilise LocalDateTime
         mvtEmpruntRepository.save(mvt);
 
         return savedEmprunt;
     }
 
-    // Méthode utilitaire pour obtenir le dernier statut d'un emprunt
-
-
-    // Méthode utilitaire pour calculer l'âge (conservée mais non utilisée ici)
-    private int calculateAge(LocalDate dateNaissance, Instant referenceDate) {
-        LocalDate refDate = referenceDate.atZone(ZoneId.systemDefault()).toLocalDate();
-        return java.time.Period.between(dateNaissance, refDate).getYears();
-    }
-
     public String getLastStatutForEmprunt(Integer empruntId) {
         return mvtEmpruntRepository.findTopByEmpruntIdOrderByDateMouvementDesc(empruntId)
-            .map(mvt -> mvt.getStatutNouveau().getCodeStatut())
-            .orElse("Inconnu");
+                .map(mvt -> mvt.getStatutNouveau().getCodeStatut())
+                .orElse("Inconnu");
     }
 }

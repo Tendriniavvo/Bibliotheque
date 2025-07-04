@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -31,10 +32,10 @@ public class Emprunt {
     private TypeEmprunt typeEmprunt;
 
     @Column(name = "date_emprunt", nullable = false)
-    private Instant dateEmprunt;
+    private LocalDate dateEmprunt;
 
     @Column(name = "date_retour_prevue", nullable = false)
-    private Instant dateRetourPrevue;
+    private LocalDate dateRetourPrevue;
 }
 
 

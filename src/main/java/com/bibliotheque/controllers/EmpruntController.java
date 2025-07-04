@@ -19,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -106,9 +107,8 @@ public class EmpruntController {
 
             // Conversion des dates
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            Instant dateEmprunt = LocalDateTime.parse(dateEmpruntStr, formatter).atZone(ZoneId.systemDefault()).toInstant();
-            Instant dateRetourPrevue = LocalDateTime.parse(dateRetourPrevueStr, formatter).atZone(ZoneId.systemDefault()).toInstant();
-
+            LocalDate dateEmprunt = LocalDate.parse(dateEmpruntStr, formatter);
+            LocalDate dateRetourPrevue = LocalDate.parse(dateRetourPrevueStr, formatter);
             emprunt.setDateEmprunt(dateEmprunt);
             emprunt.setDateRetourPrevue(dateRetourPrevue);
 

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -27,5 +28,5 @@ public class MvtReservation {
     private StatutReservation statutNouveau;
 
     @Column(name = "date_mouvement", nullable = false)
-    private Instant dateMouvement;
+    private LocalDateTime dateMouvement;
 }

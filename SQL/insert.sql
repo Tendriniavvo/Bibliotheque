@@ -77,6 +77,14 @@ INSERT INTO Statuts_Reservation (code_statut) VALUES
 ('Exprirée');    -- La réservation a été refusée (par exemple, indisponibilité)
 
 
+INSERT INTO Statuts_Emprunt (code_statut) VALUES 
+('En attente'),     -- La réservation est en attente de traitement
+('Validée'),        -- La réservation a été validée
+('Annulée'),        -- La réservation a été annulée par l'utilisateur ou le personnel
+('Exprirée'),
+('En cours');   
+
+
 
 
 

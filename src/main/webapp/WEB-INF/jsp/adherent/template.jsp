@@ -73,7 +73,7 @@
             transform: translateX(5px);
         }
         .sidebar a.active {
-            background-color: #16a085;
+            background-color: #2980b9;
             font-weight: bold;
         }
         .content {
@@ -218,12 +218,9 @@
 <body>
     <div class="container">
         <div class="sidebar">
-            <h2><i class="fas fa-book"></i> Bibliothèque</h2>
-            <a href="/client/livres" class="<%= contentPage.contains("livres") ? "active" : "" %>"><i class="fas fa-book-open"></i> Livres Disponibles</a>
-            <a href="/client/emprunts" class="<%= contentPage.contains("emprunts") ? "active" : "" %>"><i class="fas fa-book-reader"></i> Mes Emprunts</a>
-            <a href="/reservation/form" class="<%= contentPage.contains("reservations") ? "active" : "" %>"><i class="fas fa-calendar-check"></i> Mes Réservations</a>
-            <a href="/client/profil" class="<%= contentPage.contains("profil") ? "active" : "" %>"><i class="fas fa-user"></i> Mon Profil</a>
-        </div>
+            <h2><i class="fas fa-book"></i> Adherent</h2>
+            <a href="/reservation/form" class="<%= contentPage.contains("reservation") ? "active" : "" %>"><i class="fas fa-book-open"></i>Reservation</a>
+            </div>
         <div class="content">
             <div class="navbar">
                 <div class="user-info">

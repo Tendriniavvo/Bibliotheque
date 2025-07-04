@@ -27,4 +27,5 @@ public class Abonnement {
 
     @Column(name = "date_fin", nullable = false)
     private LocalDate dateFin;
+    
 }

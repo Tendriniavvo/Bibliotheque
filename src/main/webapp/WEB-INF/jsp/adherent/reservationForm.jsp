@@ -1,19 +1,90 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.bibliotheque.entities.Livre" %>
 <%@ page import="com.bibliotheque.entities.Adherent" %>
-<%@ page import="com.bibliotheque.entities.StatutReservation" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%
     Adherent profil = (Adherent) request.getAttribute("profil");
-    List<Adherent> adherents = (List<Adherent>) request.getAttribute("adherents");
     List<Livre> livres = (List<Livre>) request.getAttribute("livres");
-    List<StatutReservation> statuts = (List<StatutReservation>) request.getAttribute("statuts");
+    String message = (String) request.getAttribute("message");
+    String messageType = (String) request.getAttribute("messageType");
 %>
+
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    input[type="date"],
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    button {
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #2980b9;
+    }
+    .back-button {
+        background-color: #7f8c8d;
+        margin-left: 10px;
+    }
+    .back-button:hover {
+        background-color: #6c7a89;
+    }
+    .message {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
 
 <h1>Ajouter une Réservation</h1>
 
-<form action="reservation/save" method="post">
+<% if (message != null && !message.isEmpty()) { %>
+    <div class="message <%= "success".equals(messageType) ? "success" : "error" %>">
+        <%= message %>
+    </div>
+<% } %>
+
+<form action="/reservation/save" method="post">
+
+    <input type="hidden" name="idAdherent" value="<%= profil != null ? profil.getId() : "" %>" />
+
+    <div class="form-group">
+        <label>Adhérent</label>
+        <p><%= profil != null ? profil.getNom() + " " + profil.getPrenom() : "Non connecté" %></p>
+    </div>
 
     <div class="form-group">
         <label for="idLivre">Livre <span style="color:red">*</span></label>
@@ -26,31 +97,23 @@
     </div>
 
     <div class="form-group">
-        <label for="idAdherent">Adhérent <span style="color:red">*</span></label>
-        <select id="idAdherent" name="idAdherent" required>
-            <option value="" disabled selected>Sélectionner un adhérent</option>
-            <% for (Adherent adherent : adherents) { %>
-                <option value="<%= adherent.getId() %>"><%= adherent.getNom() %></option>
-            <% } %>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="idStatut">Statut <span style="color:red">*</span></label>
-        <select id="idStatut" name="idStatut" required>
-            <option value="" disabled selected>Sélectionner un statut</option>
-            <% for (StatutReservation statut : statuts) { %>
-                <option value="<%= statut.getId() %>"><%= statut.getCodeStatut() %></option>
-            <% } %>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="dateExpiration">Date d'expiration <span style="color:red">*</span></label>
-        <input type="date" id="dateExpiration" name="dateExpiration" required />
+        <label for="dateAReserver">Date à réserver <span style="color:red">*</span></label>
+        <input type="date" id="dateAReserver" name="dateAReserver" required />
     </div>
 
     <button type="submit">Enregistrer</button>
-    <a href="/reservation/liste"><button type="button">Retour</button></a>
+    <a href="/reservation/liste"><button type="button" class="back-button">Retour</button></a>
 
 </form>
+
+<script>
+    document.getElementById('dateAReserver').addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+            alert("La date de réservation doit être aujourd'hui ou dans le futur.");
+            this.value = '';
+        }
+    });
+</script>

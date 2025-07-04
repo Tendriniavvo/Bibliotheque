@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -23,8 +24,8 @@ public class Prolongement {
     private Emprunt emprunt;
 
     @Column(name = "date_fin", nullable = false)
-    private Instant dateFin;
+    private LocalDate dateFin;
 
     @Column(name = "date_prolongement", nullable = false)
-    private Instant dateProlongement;
+    private LocalDate dateProlongement;
 }
