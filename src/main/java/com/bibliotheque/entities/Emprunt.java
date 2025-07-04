@@ -36,3 +36,5 @@ public class Emprunt {
     @Column(name = "date_retour_prevue", nullable = false)
     private Instant dateRetourPrevue;
 }
+
+

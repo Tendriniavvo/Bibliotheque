@@ -6,13 +6,13 @@
 <%@ page import="java.util.List" %>
 
 <%
-    List<Livre> livres = (List<Livre>) request.getAttribute("livres");
     List<Adherent> adherents = (List<Adherent>) request.getAttribute("adherents");
     List<StatutReservation> statuts = (List<StatutReservation>) request.getAttribute("statuts");
     String message = (String) request.getAttribute("message");
-
-    Reservation reservation = (com.bibliotheque.entities.Reservation) request.getAttribute("reservation");
+    String messageType = (String) request.getAttribute("messageType"); // 👈 nécessaire pour éviter l’erreur
+    Reservation reservation = (Reservation) request.getAttribute("reservation");
 %>
+
 <% if (message != null && !message.isEmpty()) { %>
     <div class="message <%= "success".equals(messageType) ? "success" : "error" %>">
         <%= message %>
@@ -32,7 +32,7 @@
         <select id="idLivre" name="idLivre" required>
             <option value="" disabled <%= (reservation == null) ? "selected" : "" %>>Sélectionner un livre</option>
             <% for (Livre livre : livres) { %>
-                <option value="<%= livre.getId() %>" 
+                <option value="<%= livre.getId() %>"
                     <%= (reservation != null && reservation.getLivre() != null && livre.getId().equals(reservation.getLivre().getId())) ? "selected" : "" %>>
                     <%= livre.getTitre() %>
                 </option>
@@ -45,7 +45,7 @@
         <select id="idAdherent" name="idAdherent" required>
             <option value="" disabled <%= (reservation == null) ? "selected" : "" %>>Sélectionner un adhérent</option>
             <% for (Adherent adherent : adherents) { %>
-                <option value="<%= adherent.getId() %>" 
+                <option value="<%= adherent.getId() %>"
                     <%= (reservation != null && reservation.getAdherent() != null && adherent.getId().equals(reservation.getAdherent().getId())) ? "selected" : "" %>>
                     <%= adherent.getNom() %>
                 </option>
@@ -58,7 +58,7 @@
         <select id="idStatut" name="idStatut" required>
             <option value="" disabled <%= (reservation == null) ? "selected" : "" %>>Sélectionner un statut</option>
             <% for (StatutReservation statut : statuts) { %>
-                <option value="<%= statut.getId() %>" 
+                <option value="<%= statut.getId() %>"
                     <%= (reservation != null && reservation.getStatut() != null && statut.getId().equals(reservation.getStatut().getId())) ? "selected" : "" %>>
                     <%= statut.getCodeStatut() %>
                 </option>

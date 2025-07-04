@@ -71,11 +71,10 @@ VALUES (
 
 
 INSERT INTO Statuts_Reservation (code_statut) VALUES 
-('EN_ATTENTE'),     -- La réservation est en attente de traitement
-('VALIDEE'),        -- La réservation a été validée
-('ANNULEE'),        -- La réservation a été annulée par l'utilisateur ou le personnel
-('EXPIREE'),        -- La réservation a expiré avant d'être traitée
-('REFUSEE');        -- La réservation a été refusée (par exemple, indisponibilité)
+('En attente'),     -- La réservation est en attente de traitement
+('Validée'),        -- La réservation a été validée
+('Annulée'),        -- La réservation a été annulée par l'utilisateur ou le personnel
+('Exprirée');    -- La réservation a été refusée (par exemple, indisponibilité)
 
 
 

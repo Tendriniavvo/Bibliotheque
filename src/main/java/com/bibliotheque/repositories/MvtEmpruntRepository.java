@@ -12,5 +12,7 @@ public interface MvtEmpruntRepository extends JpaRepository<MvtEmprunt, Integer>
     // MvtEmprunt save(MvtEmprunt mvtEmprunt);
     // void deleteById(Integer id);
     // void delete(MvtEmprunt mvtEmprunt);
+
+    public Optional<MvtEmprunt> findTopByEmpruntIdOrderByDateMouvementDesc(Integer empruntId);
     
 }

@@ -38,7 +38,7 @@ public class PenaliteController {
     @GetMapping("/form")
     public ModelAndView formPenalite() {
         List<Adherent> adherents = adherentService.getAll();
-        List<Emprunt> emprunts = empruntService.getAll();
+        List<Emprunt> emprunts = empruntService.findAll();
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
         mv.addObject("adherents", adherents);
         mv.addObject("emprunts", emprunts);

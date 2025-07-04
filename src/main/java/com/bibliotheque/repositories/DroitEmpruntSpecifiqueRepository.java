@@ -10,9 +10,9 @@ import java.util.Optional;
 @Repository
 public interface DroitEmpruntSpecifiqueRepository extends JpaRepository<DroitEmpruntSpecifique, Integer> {
 
-    List<DroitEmpruntSpecifique> findByIdLivre(Integer idLivre);
+    List<DroitEmpruntSpecifique> findByLivreId(Integer livreId);
 
-    List<DroitEmpruntSpecifique> findByIdProfil(Integer idProfil);
+    List<DroitEmpruntSpecifique> findByProfilId(Integer profilId);
 
-    Optional<DroitEmpruntSpecifique> findByIdLivreAndIdProfil(Integer idLivre, Integer idProfil);
+    Optional<DroitEmpruntSpecifique> findByLivreIdAndProfilId(Integer livreId, Integer profilId);
 }

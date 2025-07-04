@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface AbonnementRepository extends JpaRepository<Abonnement, Integer> {
 
     @Query("SELECT a FROM Abonnement a " +
-           "WHERE a.idAdherent = :idAdherent " +
+           "WHERE a.adherent.id = :idAdherent " +
            "AND a.dateDebut <= :currentDate " +
            "AND a.dateFin >= :currentDate")
     Optional<Abonnement> findActiveAbonnementByAdherent(@Param("idAdherent") Integer idAdherent, 

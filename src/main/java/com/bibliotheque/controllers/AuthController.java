@@ -4,6 +4,9 @@ import com.bibliotheque.entities.Adherent;
 import com.bibliotheque.entities.Bibliothecaire;
 import com.bibliotheque.entities.Utilisateur;
 import com.bibliotheque.models.RegisterForm;
+import com.bibliotheque.services.AbonnementService;
+import com.bibliotheque.services.*;
+import com.bibliotheque.entities.*;
 import com.bibliotheque.services.AdherentService;
 import com.bibliotheque.services.BibliothecaireService;
 import com.bibliotheque.services.UtilisateurService;
@@ -16,6 +19,7 @@ import jakarta.servlet.http.HttpSession;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class AuthController {
@@ -29,6 +33,15 @@ public class AuthController {
     @Autowired
     private BibliothecaireService bibliothecaireService;
 
+    @Autowired
+    private AbonnementService abonnementService;
+
+    @Autowired
+    private StatutReservationService statutReservationService;
+
+    @Autowired
+    private LivreService livreService;
+
     @PostMapping("/login")
     public ModelAndView login(
             @RequestParam String email,
@@ -37,8 +50,8 @@ public class AuthController {
 
         Optional<Utilisateur> utilisateurOpt = utilisateurService.findByEmail(email);
 
-        if (utilisateurOpt.isEmpty() || 
-            !utilisateurOpt.get().getMotDePasseHash().equals(motDePasseHash)) {
+        if (utilisateurOpt.isEmpty() ||
+                !utilisateurOpt.get().getMotDePasseHash().equals(motDePasseHash)) {
             ModelAndView mv = new ModelAndView("login");
             mv.addObject("error", "Identifiants invalides");
             return mv;
@@ -51,13 +64,24 @@ public class AuthController {
         Optional<Bibliothecaire> bibliothecaireOpt = bibliothecaireService.findByUtilisateurId(utilisateur.getId());
         if (bibliothecaireOpt.isPresent()) {
             ModelAndView mv = new ModelAndView("bibliothecaire/template");
-            mv.addObject("contentPage", "form.jsp");
+            mv.addObject("contentPage", "abonnementListe.jsp");
             mv.addObject("bibliothecaire", bibliothecaireOpt.get());
+        
+            // 👇 Ajoute cette ligne pour corriger l'erreur
+            mv.addObject("abonnements", abonnementService.getAll());
+        
             return mv;
         }
+        
         ModelAndView mv = new ModelAndView("adherent/template");
-        mv.addObject("contentPage", "dash.jsp");
+        mv.addObject("contentPage", "reservationForm.jsp");
         Optional<Adherent> adherentOpt = adherentService.findByUtilisateurId(utilisateur.getId());
+        List<Livre> livres = livreService.getAll();
+        List<Adherent> adherents = adherentService.getAll();
+        List<StatutReservation> statuts = statutReservationService.getAll();
+        mv.addObject("livres", livres);
+        mv.addObject("adherents", adherents);
+        mv.addObject("statuts", statuts);
         mv.addObject("profil", adherentOpt.get());
         return mv;
     }

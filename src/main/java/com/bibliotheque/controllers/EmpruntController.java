@@ -1,15 +1,28 @@
 package com.bibliotheque.controllers;
 
-import com.bibliotheque.entities.*;
-import com.bibliotheque.services.*;
+import com.bibliotheque.entities.Adherent;
+import com.bibliotheque.entities.Emprunt;
+import com.bibliotheque.entities.Exemplaire;
+import com.bibliotheque.entities.TypeEmprunt;
+import com.bibliotheque.services.AdherentService;
+import com.bibliotheque.services.EmpruntService;
+import com.bibliotheque.services.ExemplaireService;
+import com.bibliotheque.services.TypeEmpruntService;
+import com.bibliotheque.exceptions.EmpruntException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,21 +30,26 @@ import java.util.Optional;
 @RequestMapping("/emprunt")
 public class EmpruntController {
 
-    @Autowired
-    private EmpruntService empruntService;
+    private final EmpruntService empruntService;
+    private final AdherentService adherentService;
+    private final ExemplaireService exemplaireService;
+    private final TypeEmpruntService typeEmpruntService;
 
     @Autowired
-    private AdherentService adherentService;
-
-    @Autowired
-    private ExemplaireService exemplaireService;
-
-    @Autowired
-    private TypeEmpruntService typeEmpruntService;
+    public EmpruntController(
+            EmpruntService empruntService,
+            AdherentService adherentService,
+            ExemplaireService exemplaireService,
+            TypeEmpruntService typeEmpruntService) {
+        this.empruntService = empruntService;
+        this.adherentService = adherentService;
+        this.exemplaireService = exemplaireService;
+        this.typeEmpruntService = typeEmpruntService;
+    }
 
     @GetMapping("/liste")
-    public ModelAndView listeEmprunts() {
-        List<Emprunt> emprunts = empruntService.getAll();
+    public ModelAndView listeEmprunt() {
+        List<Emprunt> emprunts = empruntService.findAll();
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
         mv.addObject("emprunts", emprunts);
         mv.addObject("contentPage", "empruntListe.jsp");
@@ -39,15 +57,14 @@ public class EmpruntController {
     }
 
     @GetMapping("/form")
-    public ModelAndView formEmprunt() {
+    public ModelAndView formAuteur() {
+        ModelAndView mv = new ModelAndView("bibliothecaire/template");
         List<Adherent> adherents = adherentService.getAll();
         List<Exemplaire> exemplaires = exemplaireService.getAll();
-        List<TypeEmprunt> typesEmprunt = typeEmpruntService.getAll();
-
-        ModelAndView mv = new ModelAndView("bibliothecaire/template");
+        List<TypeEmprunt> typeEmprunts = typeEmpruntService.getAll();
         mv.addObject("adherents", adherents);
         mv.addObject("exemplaires", exemplaires);
-        mv.addObject("typesEmprunt", typesEmprunt);
+        mv.addObject("typesEmprunt", typeEmprunts);
         mv.addObject("contentPage", "empruntForm.jsp");
         return mv;
     }
@@ -58,36 +75,53 @@ public class EmpruntController {
             @RequestParam("idExemplaire") Integer idExemplaire,
             @RequestParam("idTypeEmprunt") Integer idTypeEmprunt,
             @RequestParam("dateEmprunt") String dateEmpruntStr,
-            @RequestParam("dateRetourPrevue") String dateRetourPrevueStr) {
+            @RequestParam("dateRetourPrevue") String dateRetourPrevueStr,
+            RedirectAttributes redirectAttributes) {
 
-        Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
-        if (adherentOpt.isEmpty()) {
-            return "redirect:/emprunt/form?error=adherentNotFound";
+        // Validation des paramètres de base
+        if (idAdherent == null || idExemplaire == null || idTypeEmprunt == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Les identifiants de l'adhérent, de l'exemplaire ou du type d'emprunt sont manquants.");
+            return "redirect:/emprunt/form";
         }
 
-        Optional<Exemplaire> exemplaireOpt = exemplaireService.findById(idExemplaire);
-        if (exemplaireOpt.isEmpty()) {
-            return "redirect:/emprunt/form?error=exemplaireNotFound";
+        if (dateEmpruntStr == null || dateEmpruntStr.isEmpty() || dateRetourPrevueStr == null || dateRetourPrevueStr.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Les dates d'emprunt ou de retour prévu sont manquantes.");
+            return "redirect:/emprunt/form";
         }
 
-        Optional<TypeEmprunt> typeEmpruntOpt = typeEmpruntService.findById(idTypeEmprunt);
-        if (typeEmpruntOpt.isEmpty()) {
-            return "redirect:/emprunt/form?error=typeEmpruntNotFound";
-        }
-
+        // Création de l'objet Emprunt
         Emprunt emprunt = new Emprunt();
-        emprunt.setAdherent(adherentOpt.get());
-        emprunt.setExemplaire(exemplaireOpt.get());
-        emprunt.setTypeEmprunt(typeEmpruntOpt.get());
+        try {
+            // Récupération des entités
+            Adherent adherent = adherentService.findById(idAdherent)
+                    .orElseThrow(() -> new EmpruntException("L'adhérent spécifié n'existe pas."));
+            Exemplaire exemplaire = exemplaireService.findById(idExemplaire)
+                    .orElseThrow(() -> new EmpruntException("L'exemplaire spécifié n'existe pas."));
+            TypeEmprunt typeEmprunt = typeEmpruntService.findById(idTypeEmprunt)
+                    .orElseThrow(() -> new EmpruntException("Le type d'emprunt spécifié n'existe pas."));
 
-        // Parse dates from String (format attendu : yyyy-MM-dd'T'HH:mm, exemple: 2025-07-03T20:30)
-        Instant dateEmprunt = LocalDateTime.parse(dateEmpruntStr).atZone(ZoneId.systemDefault()).toInstant();
-        Instant dateRetourPrevue = LocalDateTime.parse(dateRetourPrevueStr).atZone(ZoneId.systemDefault()).toInstant();
+            emprunt.setAdherent(adherent);
+            emprunt.setExemplaire(exemplaire);
+            emprunt.setTypeEmprunt(typeEmprunt);
 
-        emprunt.setDateEmprunt(dateEmprunt);
-        emprunt.setDateRetourPrevue(dateRetourPrevue);
+            // Conversion des dates
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            Instant dateEmprunt = LocalDateTime.parse(dateEmpruntStr, formatter).atZone(ZoneId.systemDefault()).toInstant();
+            Instant dateRetourPrevue = LocalDateTime.parse(dateRetourPrevueStr, formatter).atZone(ZoneId.systemDefault()).toInstant();
 
-        empruntService.save(emprunt);
+            emprunt.setDateEmprunt(dateEmprunt);
+            emprunt.setDateRetourPrevue(dateRetourPrevue);
+
+            // Appel du service pour enregistrer l'emprunt
+            empruntService.save(emprunt);
+            redirectAttributes.addFlashAttribute("successMessage", "Emprunt ajouté avec succès.");
+        } catch (DateTimeParseException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Format de date invalide. Utilisez le format yyyy-MM-dd'T'HH:mm (ex. 2025-07-03T20:30).");
+            return "redirect:/emprunt/form";
+        } catch (EmpruntException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/emprunt/form";
+        }
 
         return "redirect:/emprunt/liste";
     }

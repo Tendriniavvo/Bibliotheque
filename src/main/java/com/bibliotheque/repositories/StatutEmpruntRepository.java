@@ -12,5 +12,8 @@ public interface StatutEmpruntRepository extends JpaRepository<StatutEmprunt, In
     // List<StatutEmprunt> findAll();
     // StatutEmprunt save(StatutEmprunt statutEmprunt);
     // void deleteById(Integer id);
+    public Optional<StatutEmprunt> findById(Integer id);
+
+    Optional<StatutEmprunt> findByCodeStatut(String codeStatut);
     
 }

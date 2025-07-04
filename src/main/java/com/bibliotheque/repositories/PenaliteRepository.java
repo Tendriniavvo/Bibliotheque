@@ -12,9 +12,15 @@ import java.util.List;
 @Repository
 public interface PenaliteRepository extends JpaRepository<Penalite, Integer> {
 
-    @Query("SELECT p FROM Penalite p " +
-           "WHERE p.idAdherent = :idAdherent " +
-           "AND (p.dateFin IS NULL OR p.dateFin >= :currentDate)")
-    List<Penalite> findActivePenalitesByAdherent(@Param("idAdherent") Integer idAdherent,
-                                                @Param("currentDate") LocalDate currentDate);
+       @Query(value = """
+                     SELECT * FROM penalites
+                     WHERE id_adherent = :idAdherent
+                     AND date_debut <= :currentDate
+                     AND date_debut + INTERVAL '1 DAY' * jour >= :currentDate
+                     """, nativeQuery = true)
+       List<Penalite> findActivePenalitesByAdherent(
+                     @Param("idAdherent") Integer idAdherent,
+                     @Param("currentDate") LocalDate currentDate);
+
+       public List<Penalite> findByAdherentId(Integer adherentId);
 }

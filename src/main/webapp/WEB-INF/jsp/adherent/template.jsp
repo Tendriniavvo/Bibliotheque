@@ -2,6 +2,7 @@
 <%@ page import="com.bibliotheque.entities.Livre" %>
 <%@ page import="java.util.List" %>
 <%
+    String contentPage = (String) request.getAttribute("contentPage");
     String userName = (String) session.getAttribute("userName");
     if (userName == null) {
         userName = "Client";
@@ -199,6 +200,18 @@
             .search-bar input[type="text"] {
                 width: 100%;
             }
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
         }
     </style>
 </head>

@@ -2,10 +2,14 @@ package com.bibliotheque.controllers;
 
 import com.bibliotheque.entities.*;
 import com.bibliotheque.services.*;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,9 +42,9 @@ public class ReservationController {
     }
 
     // Afficher le formulaire d'ajout ou modification
-    @GetMapping({"/form", "/form/{id}"})
+    @GetMapping({ "/form", "/form/{id}" })
     public ModelAndView formReservation(@PathVariable(required = false) Integer id) {
-        ModelAndView mv = new ModelAndView("adherent/template");
+        ModelAndView mv = new ModelAndView("bibliothecaire/template");
 
         List<Livre> livres = livreService.getAll();
         List<Adherent> adherents = adherentService.getAll();
@@ -66,18 +70,27 @@ public class ReservationController {
 
     // Sauvegarder une nouvelle réservation
     @PostMapping("/save")
-    public String saveReservation(
-            @RequestParam("idLivre") Integer idLivre,
-            @RequestParam("idAdherent") Integer idAdherent,
-            @RequestParam("idStatut") Integer idStatut,
-            @RequestParam("dateExpiration") String dateExpirationStr) {
+public String saveReservation(
+        @RequestParam("idLivre") Integer idLivre,
+        @RequestParam("idAdherent") Integer idAdherent,
+        @RequestParam("idStatut") Integer idStatut,
+        @RequestParam("dateExpiration") String dateExpirationStr,
+        HttpServletRequest request,
+        RedirectAttributes redirectAttributes) {
 
+    try {
         Optional<Livre> livreOpt = livreService.findById(idLivre);
         Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
         Optional<StatutReservation> statutOpt = statutReservationService.findById(idStatut);
 
         if (livreOpt.isEmpty() || adherentOpt.isEmpty() || statutOpt.isEmpty()) {
-            return "redirect:/reservation/form?error=entityNotFound";
+            request.setAttribute("message", "Entité introuvable.");
+            request.setAttribute("messageType", "error");
+            request.setAttribute("livres", livreService.getAll());
+            request.setAttribute("adherents", adherentService.getAll());
+            request.setAttribute("statuts", statutReservationService.getAll());
+            request.setAttribute("contentPage", "reservationForm.jsp");
+            return "bibliothecaire/template";
         }
 
         Reservation reservation = new Reservation();
@@ -89,8 +102,22 @@ public class ReservationController {
 
         reservationService.save(reservation);
 
+        redirectAttributes.addFlashAttribute("message", "Réservation enregistrée avec succès.");
+        redirectAttributes.addFlashAttribute("messageType", "success");
+
         return "redirect:/reservation/liste";
+
+    } catch (Exception e) {
+        request.setAttribute("message", "Erreur lors de l'enregistrement : " + e.getMessage());
+        request.setAttribute("messageType", "error");
+        request.setAttribute("livres", livreService.getAll());
+        request.setAttribute("adherents", adherentService.getAll());
+        request.setAttribute("statuts", statutReservationService.getAll());
+        request.setAttribute("contentPage", "reservationForm.jsp");
+        return "bibliothecaire/template"; // pas de redirect ici
     }
+}
+
 
     // Mettre à jour une réservation existante
     @PostMapping("/update")
