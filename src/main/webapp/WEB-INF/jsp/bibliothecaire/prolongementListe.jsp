@@ -6,7 +6,7 @@
 
 <%
     List<Prolongement> prolongements = (List<Prolongement>) request.getAttribute("prolongements");
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 %>
 
 <h1>Tableau de Bord - Gestion des Prolongements</h1>

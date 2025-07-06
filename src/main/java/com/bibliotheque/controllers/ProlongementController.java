@@ -2,6 +2,7 @@ package com.bibliotheque.controllers;
 
 import com.bibliotheque.entities.Emprunt;
 import com.bibliotheque.entities.Prolongement;
+import com.bibliotheque.exceptions.EmpruntException;
 import com.bibliotheque.services.EmpruntService;
 import com.bibliotheque.services.ProlongementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/prolongement")
@@ -50,74 +47,55 @@ public class ProlongementController {
         return mv;
     }
 
+    // @GetMapping("/form")
+    // public ModelAndView formProlongement(@RequestParam("id") Integer id) {
+    //     Emprunt emprunt = empruntService.findById(id)
+    //             .orElseThrow(() -> new IllegalArgumentException("Emprunt non trouvé : " + id));
+    //     ModelAndView mv = new ModelAndView("bibliothecaire/template");
+    //     mv.addObject("emprunt", emprunt);
+    //     mv.addObject("contentPage", "prolongementForm.jsp");
+    //     return mv;
+    // }
+
     @PostMapping("/save")
     public String saveProlongement(
             @RequestParam("idEmprunt") Integer idEmprunt,
             @RequestParam("dateFin") String dateFinStr,
             RedirectAttributes redirectAttributes) {
 
-        // Validation des paramètres
+        // Validation des paramètres de base
         if (idEmprunt == null || dateFinStr == null || dateFinStr.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "L'identifiant de l'emprunt ou la date de fin est manquant.");
-            return "redirect:/prolongement/form";
+            return "redirect:/prolongement/form?id=" + idEmprunt;
         }
 
-        // Vérification de l'existence de l'emprunt
-        Optional<Emprunt> empruntOpt = empruntService.findById(idEmprunt);
-        if (empruntOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "L'emprunt spécifié n'existe pas.");
-            return "redirect:/prolongement/form";
-        }
-
-        Emprunt emprunt = empruntOpt.get();
-        // Vérification du statut de l'emprunt
-        if (!"En cours".equalsIgnoreCase(empruntService.getLastStatutForEmprunt(emprunt.getId()))) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "L'emprunt n'est pas en cours et ne peut pas être prolongé.");
-            return "redirect:/prolongement/form";
-        }
-
-        // Conversion de la date de fin
-        LocalDate dateFin;
+        // Création de l'objet Prolongement
+        Prolongement prolongement = new Prolongement();
         try {
+            // Récupération de l'emprunt
+            Emprunt emprunt = empruntService.findById(idEmprunt)
+                    .orElseThrow(() -> new EmpruntException("L'emprunt spécifié n'existe pas."));
+
+            // Conversion de la date
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime ldt = LocalDateTime.parse(dateFinStr, formatter);
-            dateFin = ldt.toLocalDate();
-        } catch (DateTimeParseException e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Format de date invalide. Utilisez le format yyyy-MM-dd'T'HH:mm (ex. 2025-07-03T20:30).");
-            return "redirect:/prolongement/form";
-        }
+            LocalDate dateFin = LocalDate.parse(dateFinStr, formatter);
 
-        // Vérification que la nouvelle date de fin est postérieure à la date de retour
-        // prévue actuelle
-        LocalDate ancienneDateFin = emprunt.getDateRetourPrevue();
-        if (dateFin.isBefore(ancienneDateFin) || dateFin.equals(ancienneDateFin)) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "La nouvelle date de fin doit être postérieure à la date de retour prévue actuelle.");
-            return "redirect:/prolongement/form";
-        }
-
-        try {
-            // Création du prolongement
-            Prolongement prolongement = new Prolongement();
+            // Configuration du prolongement
             prolongement.setEmprunt(emprunt);
             prolongement.setDateFin(dateFin);
             prolongement.setDateProlongement(LocalDate.now());
 
-            // Enregistrement du prolongement
+            // Appel du service pour enregistrer le prolongement
             prolongementService.save(prolongement);
-
-            // Mise à jour de la date de retour prévue de l'emprunt
-            emprunt.setDateRetourPrevue(dateFin);
-            empruntService.save(emprunt);
-
             redirectAttributes.addFlashAttribute("successMessage", "Prolongement ajouté avec succès.");
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Erreur lors de l'enregistrement du prolongement : " + e.getMessage());
-            return "redirect:/prolongement/form";
+                    "Format de date invalide. Utilisez le format yyyy-MM-dd'T'HH:mm (ex. 2025-07-03T20:30).");
+            return "redirect:/prolongement/form?id=" + idEmprunt;
+        } catch (EmpruntException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/prolongement/form?id=" + idEmprunt;
         }
 
         return "redirect:/prolongement/liste";

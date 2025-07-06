@@ -1,12 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.bibliotheque.entities.Emprunt" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.time.ZoneId" %>
 
 <%
     List<Emprunt> emprunts = (List<Emprunt>) request.getAttribute("emprunts");
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+    Map<Integer, String> statuts = (Map<Integer, String>) request.getAttribute("statuts");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 %>
 
 <h1>Tableau de Bord - Gestion des Emprunts</h1>
@@ -21,6 +23,7 @@
             <th>Type d'Emprunt</th>
             <th>Date d'Emprunt</th>
             <th>Date Retour Prévue</th>
+            <th>Statut</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -28,17 +31,19 @@
         <% for (Emprunt emprunt : emprunts) { %>
         <tr>
             <td><%= emprunt.getId() %></td>
-            <td><%= emprunt.getAdherent() != null ? emprunt.getAdherent().getNom() + " " + emprunt.getAdherent().getPrenom() : "" %></td>
+            <td><%= emprunt.getAdherent() != null ? emprunt.getAdherent().getNom() + " " + emprunt.getAdherent().getPrenom() : "Inconnu" %></td>
             <td>
                 <%= emprunt.getExemplaire() != null && emprunt.getExemplaire().getLivre() != null 
-                    ? emprunt.getExemplaire().getLivre().getTitre() : "" %>
+                    ? emprunt.getExemplaire().getLivre().getTitre() : "Inconnu" %>
             </td>
-            <td><%= emprunt.getTypeEmprunt() != null ? emprunt.getTypeEmprunt().getNomType() : "" %></td>
-            <td><%= emprunt.getDateEmprunt() != null ? formatter.format(emprunt.getDateEmprunt()) : "" %></td>
-            <td><%= emprunt.getDateRetourPrevue() != null ? formatter.format(emprunt.getDateRetourPrevue()) : "" %></td>
+            <td><%= emprunt.getTypeEmprunt() != null ? emprunt.getTypeEmprunt().getNomType() : "Inconnu" %></td>
+            <td><%= emprunt.getDateEmprunt() != null ? formatter.format(emprunt.getDateEmprunt()) : "Non défini" %></td>
+            <td><%= emprunt.getDateRetourPrevue() != null ? formatter.format(emprunt.getDateRetourPrevue()) : "Non défini" %></td>
+            <td><%= statuts.getOrDefault(emprunt.getId(), "Inconnu") %></td>
             <td class="action-buttons">
-                <button class="edit-button" onclick="location.href='/emprunt/edit?id=<%= emprunt.getId() %>'">Modifier</button>
-                <button class="delete-button" onclick="if(confirm('Voulez-vous vraiment supprimer cet emprunt ?')) location.href='/emprunt/delete?id=<%= emprunt.getId() %>'">Supprimer</button>
+                <button class="delete-button" onclick="location.href='/emprunt/prolonger?id=<%= emprunt.getId() %>'">Prolonger</button>
+                <button  class="edit-button" onclick="location.href='/emprunt/rendre?idEmprunt=<%= emprunt.getId() %>'">Rendre</button>
+
             </td>
         </tr>
         <% } %>

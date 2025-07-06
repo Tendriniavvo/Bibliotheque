@@ -13,4 +13,8 @@ public class MvtEmpruntService {
     public MvtEmpruntService(MvtEmpruntRepository repository) {
         this.repository = repository;
     }
+
+    public MvtEmprunt save(MvtEmprunt mvtEmprunt) {
+        return repository.save(mvtEmprunt);
+    }
 }

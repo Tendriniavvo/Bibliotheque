@@ -35,6 +35,9 @@ public interface EmpruntRepository extends JpaRepository<Emprunt, Integer> {
             "AND NOT EXISTS (SELECT 1 FROM MvtEmprunt m WHERE m.emprunt.id = e.id " +
             "AND m.statutNouveau.codeStatut IN ('RENDU', 'PERDU', 'Annulée'))")
     public long countByIdAdherentAndStatutEnCours(@Param("idAdherent") Integer idAdherent);
+
+    @Query("SELECT e FROM Emprunt e WHERE e.adherent.id = :adherentId")
+    List<Emprunt> findByAdherentId(@Param("adherentId") Integer adherentId);
   
 
 

@@ -24,7 +24,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -51,8 +53,15 @@ public class EmpruntController {
     @GetMapping("/liste")
     public ModelAndView listeEmprunt() {
         List<Emprunt> emprunts = empruntService.findAll();
+        // Créer une map pour associer chaque emprunt à son dernier statut
+        Map<Integer, String> statuts = new HashMap<>();
+        for (Emprunt emprunt : emprunts) {
+            String statut = empruntService.getLastStatutForEmprunt(emprunt.getId());
+            statuts.put(emprunt.getId(), statut);
+        }
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
         mv.addObject("emprunts", emprunts);
+        mv.addObject("statuts", statuts); // Ajouter les statuts au modèle
         mv.addObject("contentPage", "empruntListe.jsp");
         return mv;
     }
@@ -81,12 +90,15 @@ public class EmpruntController {
 
         // Validation des paramètres de base
         if (idAdherent == null || idExemplaire == null || idTypeEmprunt == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Les identifiants de l'adhérent, de l'exemplaire ou du type d'emprunt sont manquants.");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Les identifiants de l'adhérent, de l'exemplaire ou du type d'emprunt sont manquants.");
             return "redirect:/emprunt/form";
         }
 
-        if (dateEmpruntStr == null || dateEmpruntStr.isEmpty() || dateRetourPrevueStr == null || dateRetourPrevueStr.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Les dates d'emprunt ou de retour prévu sont manquantes.");
+        if (dateEmpruntStr == null || dateEmpruntStr.isEmpty() || dateRetourPrevueStr == null
+                || dateRetourPrevueStr.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Les dates d'emprunt ou de retour prévu sont manquantes.");
             return "redirect:/emprunt/form";
         }
 
@@ -116,7 +128,8 @@ public class EmpruntController {
             empruntService.save(emprunt);
             redirectAttributes.addFlashAttribute("successMessage", "Emprunt ajouté avec succès.");
         } catch (DateTimeParseException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Format de date invalide. Utilisez le format yyyy-MM-dd'T'HH:mm (ex. 2025-07-03T20:30).");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Format de date invalide. Utilisez le format yyyy-MM-dd'T'HH:mm (ex. 2025-07-03T20:30).");
             return "redirect:/emprunt/form";
         } catch (EmpruntException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -125,4 +138,55 @@ public class EmpruntController {
 
         return "redirect:/emprunt/liste";
     }
+
+    @GetMapping("/prolonger/id")
+    public String prolongerEmprunt(
+            @RequestParam("id") Integer idEmprunt,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<Emprunt> empruntOpt = empruntService.findById(idEmprunt);
+        if (empruntOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "L'emprunt spécifié n'existe pas.");
+            return "redirect:/emprunt/liste";
+        }
+
+        Emprunt emprunt = empruntOpt.get();
+        if (!"En cours".equalsIgnoreCase(empruntService.getLastStatutForEmprunt(emprunt.getId()))) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "L'emprunt n'est pas en cours et ne peut pas être prolongé.");
+            return "redirect:/emprunt/liste";
+        }
+
+        // Logique de prolongement à implémenter ici
+
+        return "redirect:/emprunt/liste";
+    }
+
+    @GetMapping("/rendre")
+    public String rendreEmprunt(
+            @RequestParam("idEmprunt") Integer idEmprunt,
+            RedirectAttributes redirectAttributes) {
+    
+        // if (idEmprunt == null) {
+        //     redirectAttributes.addFlashAttribute("errorMessage", "ID d'emprunt manquant.");
+        //     return "redirect:/emprunt/liste";
+        // }
+    
+        try {
+            LocalDate dateRetourEffective = LocalDate.now();
+            empruntService.rendreEmprunt(idEmprunt, dateRetourEffective);
+    
+            redirectAttributes.addFlashAttribute("successMessage", "L'emprunt a été rendu avec succès.");
+            return "redirect:/emprunt/liste";
+        } catch (EmpruntException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Une erreur est survenue lors du retour de l'emprunt.");
+        }
+    
+        return "redirect:/emprunt/liste";
+    }
+    
+
+    
 }
