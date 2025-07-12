@@ -57,16 +57,13 @@ public class ReservationService {
 
     @Transactional
     public Reservation save(Reservation reservation) throws ReservationException {
-        // 1. Validation des données d'entrée
         if (reservation == null || reservation.getAdherent() == null || reservation.getLivre() == null) {
             throw new ReservationException("La réservation, l'adhérent ou le livre ne peut pas être nul.");
         }
 
-        // 2. Recharge l'adhérent pour avoir le profil complet
         Adherent adherent = adherentRepository.findById(reservation.getAdherent().getId())
                 .orElseThrow(() -> new ReservationException("Adhérent introuvable."));
 
-        // 3. Vérification de l'abonnement actif
         LocalDate dateAReserver = reservation.getDateAReserver().toLocalDate();
         boolean hasActiveAbonnement = abonnementRepository.existsByAdherentIdAndDateDebutLessThanEqualAndDateFinGreaterThanEqual(
                 adherent.getId(), dateAReserver, dateAReserver);
@@ -75,7 +72,6 @@ public class ReservationService {
                     "L'adhérent n'a pas d'abonnement actif à la date de réservation (" + dateAReserver + ").");
         }
 
-        // 4. Vérification des pénalités en cours
         List<Penalite> penalites = penaliteRepository.findActivePenalitesByAdherent(adherent.getId(), dateAReserver);
         for (Penalite penalite : penalites) {
             LocalDate debut = penalite.getDateDebut();
@@ -86,7 +82,6 @@ public class ReservationService {
             }
         }
 
-        // 5. Vérification du quota de réservations simultanées
         ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getIdProfil())
                 .orElseThrow(() -> new ReservationException("Le profil de l'adhérent n'existe pas."));
         long reservationsActives = reservationRepository.countActiveReservationsByAdherent(adherent.getId(), dateAReserver);
@@ -94,12 +89,10 @@ public class ReservationService {
             throw new ReservationException("L'adhérent a déjà atteint son quota de réservations simultanées.");
         }
 
-        // 6. Vérification des jours fériés
         if (joursFeriesRepository.existsByDateFerie(dateAReserver)) {
             throw new ReservationException("La date de réservation (" + dateAReserver + ") est un jour férié.");
         }
 
-        // 7. Vérification de la validité des dates
         if (reservation.getDateDemande() == null) {
             reservation.setDateDemande(LocalDateTime.now());
         }
@@ -107,7 +100,6 @@ public class ReservationService {
             throw new ReservationException("La date de réservation doit être aujourd'hui ou dans le futur.");
         }
 
-        // 8. Vérification de la disponibilité des exemplaires
         Livre livre = reservation.getLivre();
         List<Exemplaire> exemplaires = exemplaireRepository.findByLivreId(livre.getId());
         if (exemplaires.isEmpty()) {
@@ -123,11 +115,9 @@ public class ReservationService {
                     "Aucun exemplaire disponible pour ce livre à la date demandée (" + dateAReserver + ").");
         }
 
-        // 9. Sauvegarde de la réservation
-        reservation.setAdherent(adherent); // Assurer que l'adhérent complet est associé
+        reservation.setAdherent(adherent);
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        // 10. Création du mouvement de réservation avec statut "En attente"
         StatutReservation statutEnAttente = statutReservationRepository.findByCodeStatut("En attente")
                 .orElseThrow(() -> new ReservationException("Statut 'En attente' introuvable."));
         MvtReservation mvt = new MvtReservation();
