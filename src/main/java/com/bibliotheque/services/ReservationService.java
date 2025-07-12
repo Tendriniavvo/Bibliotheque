@@ -64,7 +64,7 @@ public class ReservationService {
         Adherent adherent = adherentRepository.findById(reservation.getAdherent().getId())
                 .orElseThrow(() -> new ReservationException("Adhérent introuvable."));
 
-        LocalDate dateAReserver = reservation.getDateAReserver().toLocalDate();
+        LocalDate dateAReserver = reservation.getDateAReserver();
         boolean hasActiveAbonnement = abonnementRepository.existsByAdherentIdAndDateDebutLessThanEqualAndDateFinGreaterThanEqual(
                 adherent.getId(), dateAReserver, dateAReserver);
         if (!hasActiveAbonnement) {
@@ -94,7 +94,7 @@ public class ReservationService {
         }
 
         if (reservation.getDateDemande() == null) {
-            reservation.setDateDemande(LocalDateTime.now());
+            reservation.setDateDemande(LocalDate.now());
         }
         if (reservation.getDateAReserver() == null || dateAReserver.isBefore(LocalDate.now())) {
             throw new ReservationException("La date de réservation doit être aujourd'hui ou dans le futur.");

@@ -117,7 +117,7 @@
         <label for="dateAReserver">Date à réserver <span style="color:red">*</span></label>
         <input type="date" id="dateAReserver" name="dateAReserver" required
                value="<%= (reservation != null && reservation.getDateAReserver() != null) ? 
-               reservation.getDateAReserver().toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE) : "" %>"/>
+               reservation.getDateAReserver(): "" %>"/>
     </div>
 
     <button type="submit">Enregistrer</button>

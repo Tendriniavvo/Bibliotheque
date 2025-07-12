@@ -37,7 +37,6 @@ public class ReservationController {
     @Autowired
     private BibliothecaireService bibliothecaireService;
 
-    // Afficher la liste des réservations
     @GetMapping("/liste")
     public ModelAndView listeReservations(HttpSession session) {
         List<Reservation> reservations = reservationService.getAll();
@@ -52,7 +51,6 @@ public class ReservationController {
         return mv;
     }
 
-    // Afficher le formulaire d'ajout ou modification
     @GetMapping({ "/form", "/form/{id}" })
     public ModelAndView formReservation(@PathVariable(required = false) Integer id, HttpSession session) {
         ModelAndView mv = new ModelAndView();
@@ -96,7 +94,6 @@ public class ReservationController {
         return mv;
     }
 
-    // Sauvegarder une nouvelle réservation
     @PostMapping("/save")
     public String saveReservation(
             @RequestParam("idLivre") Integer idLivre,
@@ -107,7 +104,6 @@ public class ReservationController {
             HttpSession session) {
 
         try {
-            // Vérifier que l'adhérent connecté correspond à idAdherent (pour les adhérents)
             Integer userId = (Integer) session.getAttribute("userId");
             Optional<Adherent> adherentFromSession = adherentService.findByUtilisateurId(userId);
             if (!bibliothecaireService.findByUtilisateurId(userId).isPresent() &&
@@ -142,11 +138,11 @@ public class ReservationController {
             Reservation reservation = new Reservation();
             reservation.setLivre(livreOpt.get());
             reservation.setAdherent(adherentOpt.get());
-            reservation.setDateDemande(LocalDateTime.now());
+            reservation.setDateDemande(LocalDate.now());
 
             // Conversion de la chaîne dateAReserver en LocalDateTime
             LocalDate localDate = LocalDate.parse(dateAReserver);
-            LocalDateTime dateAReserverLocalDateTime = localDate.atStartOfDay();
+            LocalDate dateAReserverLocalDateTime = localDate;
             reservation.setDateAReserver(dateAReserverLocalDateTime);
 
             reservationService.save(reservation);
@@ -238,7 +234,7 @@ public class ReservationController {
             reservation.setLivre(livreOpt.get());
             reservation.setAdherent(adherentOpt.get());
             LocalDate localDate = LocalDate.parse(dateAReserver);
-            LocalDateTime dateAReserverLocalDateTime = localDate.atStartOfDay();
+            LocalDate dateAReserverLocalDateTime = localDate;
             reservation.setDateAReserver(dateAReserverLocalDateTime);
 
             reservationService.save(reservation);

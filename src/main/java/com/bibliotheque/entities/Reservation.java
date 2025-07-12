@@ -26,8 +26,8 @@ public class Reservation {
     private Adherent adherent;
 
     @Column(name = "date_demande", nullable = false)
-    private LocalDateTime dateDemande;
+    private LocalDate dateDemande;
 
     @Column(name = "date_a_reserver", nullable = false)
-    private LocalDateTime dateAReserver;
+    private LocalDate dateAReserver;
 }
