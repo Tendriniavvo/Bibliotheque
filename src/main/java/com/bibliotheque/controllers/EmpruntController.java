@@ -166,27 +166,18 @@ public class EmpruntController {
     public String rendreEmprunt(
             @RequestParam("idEmprunt") Integer idEmprunt,
             RedirectAttributes redirectAttributes) {
-    
-        // if (idEmprunt == null) {
-        //     redirectAttributes.addFlashAttribute("errorMessage", "ID d'emprunt manquant.");
-        //     return "redirect:/emprunt/liste";
-        // }
-    
         try {
             LocalDate dateRetourEffective = LocalDate.now();
             empruntService.rendreEmprunt(idEmprunt, dateRetourEffective);
-    
             redirectAttributes.addFlashAttribute("successMessage", "L'emprunt a été rendu avec succès.");
             return "redirect:/emprunt/liste";
         } catch (EmpruntException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Une erreur est survenue lors du retour de l'emprunt.");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Une erreur est survenue lors du retour de l'emprunt.");
         }
-    
         return "redirect:/emprunt/liste";
     }
-    
 
-    
 }

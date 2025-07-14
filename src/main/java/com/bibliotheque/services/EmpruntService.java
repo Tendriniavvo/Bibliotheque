@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -156,20 +157,20 @@ public class EmpruntService {
         exemplaire.setQuantite(exemplaire.getQuantite() - 1);
         exemplaireRepository.save(exemplaire);
 
-        emprunt.setAdherent(adherent); 
+        emprunt.setAdherent(adherent);
         Emprunt savedEmprunt = empruntRepository.save(emprunt);
 
         StatutEmprunt statutEnCours = statutEmpruntRepository.findByCodeStatut("En cours")
                 .orElseGet(() -> {
                     StatutEmprunt newStatut = new StatutEmprunt();
                     newStatut.setCodeStatut("En cours");
-                    newStatut.setCodeStatut("Emprunt en cours"); 
+                    newStatut.setCodeStatut("Emprunt en cours");
                     return statutEmpruntRepository.save(newStatut);
                 });
         MvtEmprunt mvt = new MvtEmprunt();
         mvt.setEmprunt(savedEmprunt);
         mvt.setStatutNouveau(statutEnCours);
-        mvt.setDateMouvement(emprunt.getDateEmprunt()); 
+        mvt.setDateMouvement(emprunt.getDateEmprunt());
         mvtEmpruntRepository.save(mvt);
 
         return savedEmprunt;
@@ -199,8 +200,7 @@ public class EmpruntService {
             throw new EmpruntException("La date de retour effective ne peut pas être nulle");
         }
 
-        LocalDate dateEmprunt = emprunt.getDateEmprunt();
-        if (dateRetourEffective.isBefore(dateEmprunt)) {
+        if (dateRetourEffective.isBefore(emprunt.getDateEmprunt())) {
             throw new EmpruntException("La date de retour ne peut pas être antérieure à la date d'emprunt");
         }
 
@@ -213,48 +213,57 @@ public class EmpruntService {
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
                 .orElseThrow(() -> new EmpruntException("L'exemplaire associé à l'emprunt n'existe plus"));
 
-        // 6. Vérifier s'il y a un retard et gérer les pénalités
-        LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue();
-        boolean enRetard = dateRetourEffective.isAfter(dateRetourPrevue);
+        // 6. Récupérer l'adhérent et son profil pour gérer le quota
+        Adherent adherent = emprunt.getAdherent();
+        ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getIdProfil())
+                .orElseThrow(() -> new EmpruntException("Profil de l'adhérent introuvable"));
+        int quotaMax = profil.getQuotaEmpruntsSimultanes();
 
+        // 7. Vérifier s'il y a un retard et gérer les pénalités
+        boolean enRetard = dateRetourEffective.isAfter(emprunt.getDateRetourPrevue());
         if (enRetard) {
             // Calculer la durée du retard
-            long joursRetard = java.time.temporal.ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
+            long joursRetard = java.time.temporal.ChronoUnit.DAYS.between(emprunt.getDateRetourPrevue(),
+                    dateRetourEffective);
 
             // Créer une pénalité
             Penalite penalite = new Penalite();
             penalite.setEmprunt(emprunt);
-            penalite.setAdherent(emprunt.getAdherent());
+            penalite.setAdherent(adherent);
             penalite.setDateDebut(dateRetourEffective);
-            penalite.setJour((int) joursRetard); // Durée de la pénalité égale au nombre de jours de retard
+            penalite.setJour((int) joursRetard);
             penalite.setRaison("Retard de " + joursRetard + " jour(s) pour l'emprunt ID " + empruntId);
-
             penaliteRepository.save(penalite);
         }
 
-        // 7. Mettre à jour la quantité d'exemplaires (rendre l'exemplaire disponible)
+        // 8. Mettre à jour la quantité d'exemplaires (rendre l'exemplaire disponible)
         exemplaire.setQuantite(exemplaire.getQuantite() + 1);
         exemplaireRepository.save(exemplaire);
 
-        // 8. Enregistrer le mouvement d'emprunt avec statut 'Rendu'
+        // 9. Enregistrer le mouvement d'emprunt avec statut 'Rendu'
         StatutEmprunt statutRendu = statutEmpruntRepository.findByCodeStatut("Rendu")
-        .orElseThrow(() -> new EmpruntException("Le statut 'Rendu' n'existe pas dans la base."));
-
+                .orElseThrow(() -> new EmpruntException("Le statut 'Rendu' n'existe pas dans la base."));
 
         MvtEmprunt mvt = new MvtEmprunt();
         mvt.setEmprunt(emprunt);
         mvt.setStatutNouveau(statutRendu);
-        mvt.setDateMouvement(dateRetourEffective); // Convertir LocalDate en LocalDateTime
+        mvt.setDateMouvement(dateRetourEffective); // Utiliser directement LocalDate
         mvtEmpruntRepository.save(mvt);
 
-        // 9. Supprimer les réservations éventuelles pour ce livre maintenant qu'il est
-        // disponible
+        // 10. Vérifier le quota d'emprunts simultanés
+        long empruntsEnCours = empruntRepository.countByAdherentAndStatutActuel(adherent,
+                List.of("En cours", "Retard"));
+        if (empruntsEnCours >= quotaMax) {
+            // log.info("Adhérent {} a atteint son quota d'emprunts simultanés ({}).", adherent.getId(), quotaMax);
+        }
+
+        // 11. Gérer les réservations pour ce livre
         List<Reservation> reservations = reservationRepository.findByLivreId(exemplaire.getLivre().getId());
         if (!reservations.isEmpty()) {
-            // Vous pouvez choisir de notifier le premier réservateur ou simplement
-            // supprimer les réservations
-            // Pour cet exemple, on garde les réservations actives
-            // reservationRepository.deleteAll(reservations);
+            Reservation premiereReservation = reservations.get(0);
+            // log.info("Livre {} est maintenant disponible pour la réservation ID {}.", exemplaire.getLivre().getId(),
+                    // premiereReservation.getId());
+            // Option : Mettre à jour le statut de la réservation si nécessaire
         }
 
         return emprunt;
