@@ -2,6 +2,8 @@ package com.bibliotheque.repositories;
 
 import com.bibliotheque.entities.Adherent;
 import com.bibliotheque.entities.Emprunt;
+import com.bibliotheque.entities.MvtEmprunt;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,4 +47,8 @@ public interface EmpruntRepository extends JpaRepository<Emprunt, Integer> {
 
     @Query("SELECT e FROM Emprunt e WHERE e.adherent.id = :adherentId")
     List<Emprunt> findByAdherentId(@Param("adherentId") Integer adherentId);
+
+
+
+
 }

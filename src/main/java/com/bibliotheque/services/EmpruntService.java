@@ -190,24 +190,24 @@ public class EmpruntService {
 
         // 2. Vérifier le statut actuel de l'emprunt
         String statutActuel = getLastStatutForEmprunt(empruntId);
-        if (!"En cours".equalsIgnoreCase(statutActuel) && !"Retard".equalsIgnoreCase(statutActuel)) {
-            throw new EmpruntException(
-                    "L'emprunt n'est pas dans un état permettant le retour. Statut actuel : " + statutActuel);
-        }
+        // if (!"En cours".equalsIgnoreCase(statutActuel) && !"Retard".equalsIgnoreCase(statutActuel)) {
+        //     throw new EmpruntException(
+        //             "L'emprunt n'est pas dans un état permettant le retour. Statut actuel : " + statutActuel);
+        // }
 
-        // 3. Vérifier que la date de retour est valide
-        if (dateRetourEffective == null) {
-            throw new EmpruntException("La date de retour effective ne peut pas être nulle");
-        }
+        // // 3. Vérifier que la date de retour est valide
+        // if (dateRetourEffective == null) {
+        //     throw new EmpruntException("La date de retour effective ne peut pas être nulle");
+        // }
 
-        if (dateRetourEffective.isBefore(emprunt.getDateEmprunt())) {
-            throw new EmpruntException("La date de retour ne peut pas être antérieure à la date d'emprunt");
-        }
+        // if (dateRetourEffective.isBefore(emprunt.getDateEmprunt())) {
+        //     throw new EmpruntException("La date de retour ne peut pas être antérieure à la date d'emprunt");
+        // }
 
-        // 4. Vérifier que ce n'est pas un jour férié
-        if (joursFeriesRepository.existsByDateFerie(dateRetourEffective)) {
-            throw new EmpruntException("Le retour ne peut pas être effectué un jour férié");
-        }
+        // // 4. Vérifier que ce n'est pas un jour férié
+        // if (joursFeriesRepository.existsByDateFerie(dateRetourEffective)) {
+        //     throw new EmpruntException("Le retour ne peut pas être effectué un jour férié");
+        // }
 
         // 5. Récupérer l'exemplaire pour remettre à jour la quantité
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
@@ -246,6 +246,7 @@ public class EmpruntService {
 
         MvtEmprunt mvt = new MvtEmprunt();
         mvt.setEmprunt(emprunt);
+        System.out.println("l'id de l'emprunt : " + emprunt.getId() );
         mvt.setStatutNouveau(statutRendu);
         mvt.setDateMouvement(dateRetourEffective); // Utiliser directement LocalDate
         mvtEmpruntRepository.save(mvt);

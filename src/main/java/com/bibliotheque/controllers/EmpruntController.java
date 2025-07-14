@@ -61,6 +61,7 @@ public class EmpruntController {
         }
         ModelAndView mv = new ModelAndView("bibliothecaire/template");
         mv.addObject("emprunts", emprunts);
+        mv.addObject("empruntService", empruntService);
         mv.addObject("statuts", statuts); // Ajouter les statuts au modèle
         mv.addObject("contentPage", "empruntListe.jsp");
         return mv;
@@ -170,7 +171,6 @@ public class EmpruntController {
             LocalDate dateRetourEffective = LocalDate.now();
             empruntService.rendreEmprunt(idEmprunt, dateRetourEffective);
             redirectAttributes.addFlashAttribute("successMessage", "L'emprunt a été rendu avec succès.");
-            return "redirect:/emprunt/liste";
         } catch (EmpruntException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
