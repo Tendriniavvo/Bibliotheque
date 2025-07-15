@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -136,4 +137,14 @@ public class ReservationService {
     public void deleteById(Integer id) {
         reservationRepository.deleteById(id);
     }
+
+
+    public String getLastStatutForReservation(Integer reservationId) {
+        Optional<MvtReservation> lastMvt = mvtReservationRepository.findTopByReservationIdOrderByDateMouvementDesc(reservationId);
+        return lastMvt.isPresent() ? lastMvt.get().getStatutNouveau().getCodeStatut() : "En attente";
+    }
+
+   
+
+    
 }

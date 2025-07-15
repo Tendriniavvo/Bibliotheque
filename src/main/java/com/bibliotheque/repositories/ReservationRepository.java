@@ -27,4 +27,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.adherent.id = :adherentId AND CAST(r.dateAReserver AS date) = :date AND r.id IN (SELECT m.reservation.id FROM MvtReservation m WHERE m.statutNouveau.codeStatut IN ('En attente', 'Confirmée'))")
     public long countActiveReservationsByAdherent(@Param("adherentId") Integer adherentId, @Param("date") LocalDate date);
+
+
+    
 }

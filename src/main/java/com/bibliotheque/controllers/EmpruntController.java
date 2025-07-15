@@ -163,12 +163,13 @@ public class EmpruntController {
         return "redirect:/emprunt/liste";
     }
 
-    @GetMapping("/rendre")
+    @PostMapping("/rendre")
     public String rendreEmprunt(
             @RequestParam("idEmprunt") Integer idEmprunt,
+            @RequestParam("dateRetour") LocalDate dateRetour,
             RedirectAttributes redirectAttributes) {
         try {
-            LocalDate dateRetourEffective = LocalDate.now();
+            LocalDate dateRetourEffective = dateRetour;
             empruntService.rendreEmprunt(idEmprunt, dateRetourEffective);
             redirectAttributes.addFlashAttribute("successMessage", "L'emprunt a été rendu avec succès.");
         } catch (EmpruntException e) {
