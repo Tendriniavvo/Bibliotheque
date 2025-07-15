@@ -144,7 +144,7 @@ CREATE TABLE Mvt_Emprunt (
     id_mvt_emprunt SERIAL PRIMARY KEY,
     id_emprunt INT NOT NULL,
     id_statut_nouveau INT NOT NULL, -- Le statut vers lequel l'emprunt a transité
-    date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_mouvement DATE,
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE,
     FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Emprunt(id_statut)
 );

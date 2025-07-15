@@ -71,9 +71,11 @@ public class EmpruntService {
 
     @Transactional
     public Emprunt save(Emprunt emprunt) throws EmpruntException {
+        // Vérification de l'adhérent
         Adherent adherent = adherentRepository.findById(emprunt.getAdherent().getId())
                 .orElseThrow(() -> new EmpruntException("Adhérent introuvable"));
 
+        // Vérification des pénalités actives
         LocalDate dateEmprunt = emprunt.getDateEmprunt();
         List<Penalite> penalites = penaliteRepository.findActivePenalitesByAdherent(adherent.getId(), dateEmprunt);
         for (Penalite penalite : penalites) {
@@ -84,14 +86,16 @@ public class EmpruntService {
             }
         }
 
+        // Vérification du profil et du quota d'emprunts
         ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getIdProfil())
                 .orElseThrow(() -> new EmpruntException("Le profil de l'adhérent n'existe pas."));
-        long empruntsActifs = empruntRepository.countByIdAdherentAndStatutEnCours(adherent.getId(),
-                emprunt.getDateEmprunt());
-        if (empruntsActifs >= profil.getQuotaEmpruntsSimultanes()) {
-            throw new EmpruntException("L'adhérent a déjà atteint son quota d'emprunts simultanés.");
+        long empruntsActifs = empruntRepository.countByIdAdherentAndStatutEnCours(adherent.getId(), dateEmprunt);
+        int quotaRestant = profil.getQuotaEmpruntsSimultanes() - (int) empruntsActifs;
+        if (quotaRestant <= 0) {
+            throw new EmpruntException("L'adhérent a atteint ou dépassé son quota d'emprunts simultanés (" + profil.getQuotaEmpruntsSimultanes() + ").");
         }
 
+        // Vérification de l'exemplaire
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
                 .orElseThrow(() -> new EmpruntException("L'exemplaire spécifié n'existe pas."));
         int quantiteTotale = exemplaire.getQuantite();
@@ -120,33 +124,37 @@ public class EmpruntService {
             throw new EmpruntException("Aucun exemplaire disponible pour cet emprunt.");
         }
 
-        LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue();
-        Optional<Abonnement> abonnementOpt = abonnementRepository.findActiveAbonnementByAdherent(adherent.getId(),
-                dateEmprunt);
+        // Vérification de l'abonnement
+        Optional<Abonnement> abonnementOpt = abonnementRepository.findActiveAbonnementByAdherent(adherent.getId(), dateEmprunt);
         if (abonnementOpt.isEmpty()) {
             throw new EmpruntException("L'adhérent n'a pas d'abonnement actif à la date de l'emprunt.");
         }
         Abonnement abonnement = abonnementOpt.get();
+        LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue();
         LocalDate dateFinAbonnement = abonnement.getDateFin();
         if (dateRetourPrevue.isAfter(dateFinAbonnement)) {
             throw new EmpruntException("La date de retour prévue (" + dateRetourPrevue
                     + ") dépasse la fin de l'abonnement (" + dateFinAbonnement + ").");
         }
 
+        // Vérification du type d'emprunt
         TypeEmprunt typeEmprunt = typeEmpruntRepository.findById(emprunt.getTypeEmprunt().getId())
                 .orElseThrow(() -> new EmpruntException("Le type d'emprunt spécifié n'existe pas."));
 
+        // Vérification des jours fériés
         if (joursFeriesRepository.existsByDateFerie(dateEmprunt)
                 || joursFeriesRepository.existsByDateFerie(dateRetourPrevue)) {
             throw new EmpruntException("L'emprunt ou le retour prévu tombe sur un jour férié.");
         }
 
+        // Vérification des réservations
         List<Reservation> reservations = reservationRepository.findByLivreId(exemplaire.getLivre().getId());
         if (!reservations.isEmpty()
                 && reservations.stream().noneMatch(r -> r.getAdherent().getId().equals(adherent.getId()))) {
             throw new EmpruntException("Le livre est réservé par un autre adhérent.");
         }
 
+        // Vérification des dates
         if (emprunt.getDateEmprunt() == null) {
             throw new EmpruntException("La date d'emprunt est invalide.");
         }
@@ -154,17 +162,19 @@ public class EmpruntService {
             throw new EmpruntException("La date de retour prévue doit être postérieure à la date d'emprunt.");
         }
 
-        exemplaire.setQuantite(exemplaire.getQuantite() - 1);
+        // Décrémentation de la quantité de l'exemplaire
+        exemplaire.setQuantite(disponible - 1);
         exemplaireRepository.save(exemplaire);
 
+        // Enregistrement de l'emprunt
         emprunt.setAdherent(adherent);
         Emprunt savedEmprunt = empruntRepository.save(emprunt);
 
+        // Création du mouvement d'emprunt avec le statut "En cours"
         StatutEmprunt statutEnCours = statutEmpruntRepository.findByCodeStatut("En cours")
                 .orElseGet(() -> {
                     StatutEmprunt newStatut = new StatutEmprunt();
                     newStatut.setCodeStatut("En cours");
-                    newStatut.setCodeStatut("Emprunt en cours");
                     return statutEmpruntRepository.save(newStatut);
                 });
         MvtEmprunt mvt = new MvtEmprunt();

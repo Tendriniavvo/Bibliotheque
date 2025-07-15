@@ -95,93 +95,107 @@ public class ReservationController {
     }
 
     @PostMapping("/save")
-    public String saveReservation(
-            @RequestParam("idLivre") Integer idLivre,
-            @RequestParam("idAdherent") Integer idAdherent,
-            @RequestParam("dateAReserver") String dateAReserver,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
+public String saveReservation(
+        @RequestParam("idLivre") Integer idLivre,
+        @RequestParam("idAdherent") Integer idAdherent,
+        @RequestParam("dateAReserver") String dateAReserver,
+        HttpServletRequest request,
+        RedirectAttributes redirectAttributes,
+        HttpSession session) {
 
-        try {
-            Integer userId = (Integer) session.getAttribute("userId");
-            Optional<Adherent> adherentFromSession = adherentService.findByUtilisateurId(userId);
-            if (!bibliothecaireService.findByUtilisateurId(userId).isPresent() &&
+    // Vérification de l'existence de userId dans la session
+    Integer userId = (Integer) session.getAttribute("userId");
+    if (userId == null) {
+        request.setAttribute("message", "Utilisateur non connecté. Veuillez vous connecter.");
+        request.setAttribute("messageType", "error");
+        return "redirect:/login";
+    }
+
+    try {
+        Optional<Adherent> adherentFromSession = adherentService.findByUtilisateurId(userId);
+        if (!bibliothecaireService.findByUtilisateurId(userId).isPresent() &&
                 (adherentFromSession.isEmpty() || !adherentFromSession.get().getId().equals(idAdherent))) {
-                request.setAttribute("message", "Vous ne pouvez pas réserver pour un autre adhérent.");
-                request.setAttribute("messageType", "error");
-                request.setAttribute("livres", livreService.getAll());
-                request.setAttribute("adherents", adherentService.getAll());
-                request.setAttribute("statuts", statutReservationService.getAll());
-                request.setAttribute("profil", adherentFromSession.orElse(null));
-                request.setAttribute("contentPage", "reservationForm.jsp");
-                return "adherent/template";
-            }
-
-            Optional<Livre> livreOpt = livreService.findById(idLivre);
-            Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
-
-            if (livreOpt.isEmpty() || adherentOpt.isEmpty()) {
-                request.setAttribute("message", "Livre ou adhérent introuvable.");
-                request.setAttribute("messageType", "error");
-                request.setAttribute("livres", livreService.getAll());
-                request.setAttribute("adherents", adherentService.getAll());
-                request.setAttribute("statuts", statutReservationService.getAll());
-                request.setAttribute("profil", adherentFromSession.orElse(null));
-                String template = bibliothecaireService.findByUtilisateurId(userId).isPresent()
-                        ? "bibliothecaire/template"
-                        : "adherent/template";
-                request.setAttribute("contentPage", "reservationForm.jsp");
-                return template;
-            }
-
-            Reservation reservation = new Reservation();
-            reservation.setLivre(livreOpt.get());
-            reservation.setAdherent(adherentOpt.get());
-            reservation.setDateDemande(LocalDate.now());
-
-            // Conversion de la chaîne dateAReserver en LocalDateTime
-            LocalDate localDate = LocalDate.parse(dateAReserver);
-            LocalDate dateAReserverLocalDateTime = localDate;
-            reservation.setDateAReserver(dateAReserverLocalDateTime);
-
-            reservationService.save(reservation);
-
-            redirectAttributes.addFlashAttribute("message", "Réservation enregistrée avec succès.");
-            redirectAttributes.addFlashAttribute("messageType", "success");
-
-            return "redirect:/reservation/liste";
-
-        } catch (ReservationException e) {
-            request.setAttribute("message", e.getMessage());
+            request.setAttribute("message", "Vous ne pouvez pas réserver pour un autre adhérent.");
             request.setAttribute("messageType", "error");
             request.setAttribute("livres", livreService.getAll());
             request.setAttribute("adherents", adherentService.getAll());
             request.setAttribute("statuts", statutReservationService.getAll());
-
-            Integer userId = (Integer) session.getAttribute("userId");
-            request.setAttribute("profil", adherentService.findByUtilisateurId(userId).orElse(null));
-            String template = bibliothecaireService.findByUtilisateurId(userId).isPresent()
-                    ? "bibliothecaire/template"
-                    : "adherent/template";
+            request.setAttribute("profil", adherentFromSession.orElse(null));
             request.setAttribute("contentPage", "reservationForm.jsp");
-            return template;
-        } catch (Exception e) {
-            request.setAttribute("message", "Erreur inattendue lors de l'enregistrement : " + e.getMessage());
+            return "adherent/template";
+        }
+
+        Optional<Livre> livreOpt = livreService.findById(idLivre);
+        Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
+
+        if (livreOpt.isEmpty() || adherentOpt.isEmpty()) {
+            request.setAttribute("message", "Livre ou adhérent introuvable.");
             request.setAttribute("messageType", "error");
             request.setAttribute("livres", livreService.getAll());
             request.setAttribute("adherents", adherentService.getAll());
             request.setAttribute("statuts", statutReservationService.getAll());
-
-            Integer userId = (Integer) session.getAttribute("userId");
-            request.setAttribute("profil", adherentService.findByUtilisateurId(userId).orElse(null));
+            request.setAttribute("profil", adherentFromSession.orElse(null));
             String template = bibliothecaireService.findByUtilisateurId(userId).isPresent()
                     ? "bibliothecaire/template"
                     : "adherent/template";
             request.setAttribute("contentPage", "reservationForm.jsp");
             return template;
         }
+
+        Reservation reservation = new Reservation();
+        reservation.setLivre(livreOpt.get());
+        reservation.setAdherent(adherentOpt.get());
+        reservation.setDateDemande(LocalDate.now());
+
+        // Conversion de la chaîne dateAReserver en LocalDate
+        LocalDate localDate = LocalDate.parse(dateAReserver);
+        reservation.setDateAReserver(localDate);
+
+        reservationService.save(reservation);
+
+        // Message de succès
+        redirectAttributes.addFlashAttribute("message", "Réservation enregistrée avec succès.");
+        redirectAttributes.addFlashAttribute("messageType", "success");
+
+        // Redirection selon le type d'utilisateur
+        if (bibliothecaireService.findByUtilisateurId(userId).isPresent()) {
+            return "redirect:/reservation/liste"; // Bibliothécaire : redirection vers la liste
+        } else {
+            // Adhérent : retour au formulaire avec les données nécessaires
+            request.setAttribute("livres", livreService.getAll());
+            request.setAttribute("adherents", adherentService.getAll());
+            request.setAttribute("statuts", statutReservationService.getAll());
+            request.setAttribute("profil", adherentFromSession.orElse(null));
+            request.setAttribute("contentPage", "reservationForm.jsp");
+            return "adherent/template";
+        }
+
+    } catch (ReservationException e) {
+        request.setAttribute("message", e.getMessage());
+        request.setAttribute("messageType", "error");
+        request.setAttribute("livres", livreService.getAll());
+        request.setAttribute("adherents", adherentService.getAll());
+        request.setAttribute("statuts", statutReservationService.getAll());
+        request.setAttribute("profil", adherentService.findByUtilisateurId(userId).orElse(null));
+        String template = bibliothecaireService.findByUtilisateurId(userId).isPresent()
+                ? "bibliothecaire/template"
+                : "adherent/template";
+        request.setAttribute("contentPage", "reservationForm.jsp");
+        return template;
+    } catch (Exception e) {
+        request.setAttribute("message", "Erreur inattendue lors de l'enregistrement : " + e.getMessage());
+        request.setAttribute("messageType", "error");
+        request.setAttribute("livres", livreService.getAll());
+        request.setAttribute("adherents", adherentService.getAll());
+        request.setAttribute("statuts", statutReservationService.getAll());
+        request.setAttribute("profil", adherentService.findByUtilisateurId(userId).orElse(null));
+        String template = bibliothecaireService.findByUtilisateurId(userId).isPresent()
+                ? "bibliothecaire/template"
+                : "adherent/template";
+        request.setAttribute("contentPage", "reservationForm.jsp");
+        return template;
     }
+}
 
     // Mettre à jour une réservation existante
     @PostMapping("/update")

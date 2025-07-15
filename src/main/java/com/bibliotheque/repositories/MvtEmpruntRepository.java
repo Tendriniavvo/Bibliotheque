@@ -1,5 +1,8 @@
 package com.bibliotheque.repositories;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bibliotheque.entities.MvtEmprunt;
@@ -14,5 +17,8 @@ public interface MvtEmpruntRepository extends JpaRepository<MvtEmprunt, Integer>
     // void delete(MvtEmprunt mvtEmprunt);
 
     public Optional<MvtEmprunt> findTopByEmpruntIdOrderByDateMouvementDesc(Integer empruntId);
-    
+
+    @Query("SELECT m FROM MvtEmprunt m WHERE m.emprunt.id = :empruntId ORDER BY m.dateMouvement DESC")
+    Optional<MvtEmprunt> findDernierStatutByEmpruntId(@Param("empruntId") Integer empruntId);
+
 }
