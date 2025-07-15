@@ -261,8 +261,10 @@
     <div class="container">
         <div class="sidebar">
             <h2><i class="fas fa-book"></i> Bibliothèque</h2>
+            <a href="/dashboard" class="<%= contentPage.contains("abonnement") ? "active" : "" %>"><i class="fas fa-tachometer-alt"></i> Dash</a>
             <a href="/abonnement/liste" class="<%= contentPage.contains("abonnement") ? "active" : "" %>"><i class="fas fa-user-check"></i> Abonnement</a>
             <a href="/penalite/liste" class="<%= contentPage.contains("penalite") ? "active" : "" %>"><i class="fas fa-exclamation-circle"></i> Pénalité</a>
+            <a href="/adherent/liste" class="<%= contentPage.contains("adherent") ? "active" : "" %>"><i class="fas fa-users"></i> Adherent</a>
 
             <h2><i class="fas fa-books"></i> Livre</h2>
             <a href="/auteur/liste" class="<%= contentPage.contains("auteur") ? "active" : "" %>"><i class="fas fa-user"></i> Auteur</a>

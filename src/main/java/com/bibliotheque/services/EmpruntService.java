@@ -89,38 +89,19 @@ public class EmpruntService {
         // Vérification du profil et du quota d'emprunts
         ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getIdProfil())
                 .orElseThrow(() -> new EmpruntException("Le profil de l'adhérent n'existe pas."));
-        long empruntsActifs = empruntRepository.countByIdAdherentAndStatutEnCours(adherent.getId(), dateEmprunt);
-        int quotaRestant = profil.getQuotaEmpruntsSimultanes() - (int) empruntsActifs;
+        // On compte dynamiquement le nombre d'emprunts en cours pour cet adhérent (statut réel)
+        long empruntsEnCours = empruntRepository.countByAdherentAndStatutActuel(adherent, List.of("En cours", "Retard"));
+        int quotaMax = profil.getQuotaEmpruntsSimultanes();
+        int quotaRestant = quotaMax - (int) empruntsEnCours;
         if (quotaRestant <= 0) {
-            throw new EmpruntException("L'adhérent a atteint ou dépassé son quota d'emprunts simultanés (" + profil.getQuotaEmpruntsSimultanes() + ").");
+            throw new EmpruntException("L'adhérent a atteint ou dépassé son quota d'emprunts simultanés (" + quotaMax + "). Quota restant : 0");
         }
 
         // Vérification de l'exemplaire
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
                 .orElseThrow(() -> new EmpruntException("L'exemplaire spécifié n'existe pas."));
-        int quantiteTotale = exemplaire.getQuantite();
-        List<Emprunt> empruntsExemplaire = empruntRepository.findByExemplaireId(exemplaire.getId());
-        int disponible = quantiteTotale;
-        for (Emprunt e : empruntsExemplaire) {
-            String statut = getLastStatutForEmprunt(e.getId());
-            if ("En cours".equalsIgnoreCase(statut) || "Retard".equalsIgnoreCase(statut)) {
-                LocalDate debutExist = e.getDateEmprunt();
-                LocalDate finExist = e.getDateRetourPrevue();
-                LocalDate debutNouveau = emprunt.getDateEmprunt();
-                LocalDate finNouveau = emprunt.getDateRetourPrevue();
-                boolean chevauche = !finNouveau.isBefore(debutExist) && !debutNouveau.isAfter(finExist);
-                if (chevauche) {
-                    throw new EmpruntException(
-                            "Un autre emprunt pour cet exemplaire chevauche la période demandée (statut 'En cours' ou 'Retard').");
-                }
-            }
-            if ("En cours".equalsIgnoreCase(statut)) {
-                disponible -= 1;
-            } else if ("Rendu".equalsIgnoreCase(statut)) {
-                disponible += 1;
-            }
-        }
-        if (disponible <= 0) {
+        // Vérification de la disponibilité réelle de l'exemplaire
+        if (exemplaire.getQuantite() <= 0) {
             throw new EmpruntException("Aucun exemplaire disponible pour cet emprunt.");
         }
 
@@ -163,7 +144,7 @@ public class EmpruntService {
         }
 
         // Décrémentation de la quantité de l'exemplaire
-        exemplaire.setQuantite(disponible - 1);
+        exemplaire.setQuantite(exemplaire.getQuantite() - 1);
         exemplaireRepository.save(exemplaire);
 
         // Enregistrement de l'emprunt

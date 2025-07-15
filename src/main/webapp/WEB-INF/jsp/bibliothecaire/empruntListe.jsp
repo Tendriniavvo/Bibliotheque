@@ -83,9 +83,23 @@
                     <td><%= emprunt.getDateEmprunt() != null ? formatter.format(emprunt.getDateEmprunt()) : "Non défini" %></td>
                     <td><%= emprunt.getDateRetourPrevue() != null ? formatter.format(emprunt.getDateRetourPrevue()) : "Non défini" %></td>
                     <td><%= statuts != null && statuts.get(emprunt.getId()) != null ? statuts.get(emprunt.getId()) : "En cours" %></td>
-                    <td class="action-buttons">
-                        <button class="edit-button" onclick="location.href='/emprunt/prolonger?id=<%= emprunt.getId() %>'">Prolonger</button>
+                    
+                        
                         <% if (statuts == null || !statuts.containsKey(emprunt.getId()) || !"Rendu".equals(statuts.get(emprunt.getId()))) { %>
+                        <td class="action-buttons">
+                            <button class="edit-button" onclick="openProlongerModal('prolonger-modal-<%= emprunt.getId() %>')">Prolonger</button>
+                            <div id="prolonger-modal-<%= emprunt.getId() %>" class="modal">
+                                <div class="modal-content">
+                                    <h2>Prolonger l'emprunt #<%= emprunt.getId() %></h2>
+                                    <form action="/prolongement/save" method="post">
+                                        <input type="hidden" name="idEmprunt" value="<%= emprunt.getId() %>">
+                                        <label for="dateProlongation-<%= emprunt.getId() %>">Nouvelle date de retour :</label>
+                                        <input type="datetime-local" id="dateProlongation-<%= emprunt.getId() %>" name="dateProlongation" required>
+                                        <button type="submit">Confirmer</button>
+                                        <button type="button" onclick="closeProlongerModal('prolonger-modal-<%= emprunt.getId() %>')">Annuler</button>
+                                    </form>
+                                </div>
+                            </div>
                             <button class="delete-button" onclick="openModal('modal-<%= emprunt.getId() %>')">Rendre</button>
                             <div id="modal-<%= emprunt.getId() %>" class="modal">
                                 <div class="modal-content">
@@ -99,8 +113,9 @@
                                     </form>
                                 </div>
                             </div>
+                        </td>
                         <% } %>
-                    </td>
+                    
                 </tr>
             <% } %>
         <% } else { %>
@@ -117,6 +132,12 @@
     }
 
     function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    function openProlongerModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+    function closeProlongerModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
     }
 </script>
