@@ -31,7 +31,7 @@
             <td class="action-buttons">
                 <button class="edit-button" onclick="location.href='/livre/edit?id=<%= livre.getId() %>'">Modifier</button>
                 <%-- <button class="delete-button" onclick="if(confirm('Voulez-vous vraiment supprimer ce livre ?')) location.href='/livre/delete?id=<%= livre.getId() %>'">Supprimer</button> --%>
-                <button class="edit-button" onclick="location.href='/api/livre/detail/<%= livre.getId() %>'">Voir</button>
+                <button class="edit-button" onclick="location.href='/api/livre/detail/id=<%= livre.getId() %>'">Voir</button>
         </tr>
         <% } %>
     </tbody>

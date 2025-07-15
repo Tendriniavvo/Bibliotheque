@@ -21,7 +21,7 @@ public class LivreRestController {
     @Autowired
     private EmpruntService empruntService;
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/detail/id={id}")
     public ResponseEntity<?> getLivreDetail(@PathVariable Integer id) {
         Optional<Livre> livreOpt = livreService.findById(id);
         if (livreOpt.isEmpty()) {
