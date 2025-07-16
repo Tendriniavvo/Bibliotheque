@@ -386,26 +386,14 @@ public class ReservationController {
 
             // Vérifier si la réservation n'est pas déjà validée
             String currentStatut = reservationService.getLastStatutForReservation(id);
-            if ("Validée".equals(currentStatut)) {
+            if ("Validee".equalsIgnoreCase(currentStatut)) {
                 redirectAttributes.addFlashAttribute("message", "La réservation est déjà validée.");
                 redirectAttributes.addFlashAttribute("messageType", "error");
                 return "redirect:/reservation/liste";
             }
 
-            // Trouver ou créer le statut "Validée"
-            StatutReservation statut = statutReservationRepository.findByCodeStatut("Validee")
-                    .orElseGet(() -> {
-                        StatutReservation newStatut = new StatutReservation();
-                        newStatut.setCodeStatut("Validée");
-                        return statutReservationRepository.save(newStatut);
-                    });
-
-            // Créer un nouvel enregistrement dans MvtReservation
-            MvtReservation mvtReservation = new MvtReservation();
-            mvtReservation.setReservation(reservationOpt.get());
-            mvtReservation.setStatutNouveau(statut);
-            mvtReservation.setDateMouvement(LocalDateTime.now());
-            mvtReservationRepository.save(mvtReservation);
+            // Utiliser la méthode du service pour changer le statut
+            reservationService.changerStatutReservation(id, "Validee");
 
             redirectAttributes.addFlashAttribute("message", "Réservation validée avec succès.");
             redirectAttributes.addFlashAttribute("messageType", "success");

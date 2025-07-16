@@ -27,6 +27,8 @@ public class ProlongementService {
     private final ExemplaireRepository exemplaireRepository;
     private final MvtEmpruntRepository mvtEmpruntRepository;
     private final StatutEmpruntRepository statutEmpruntRepository;
+    private final StatutProlongementRepository statutProlongementRepository;
+    private final MvtProlongementRepository mvtProlongementRepository;
 
     @Autowired
     public ProlongementService(
@@ -40,7 +42,9 @@ public class ProlongementService {
             ReservationRepository reservationRepository,
             ExemplaireRepository exemplaireRepository,
             MvtEmpruntRepository mvtEmpruntRepository,
-            StatutEmpruntRepository statutEmpruntRepository) {
+            StatutEmpruntRepository statutEmpruntRepository,
+            StatutProlongementRepository statutProlongementRepository,
+            MvtProlongementRepository mvtProlongementRepository) {
         this.prolongementRepository = prolongementRepository;
         this.empruntRepository = empruntRepository;
         this.adherentRepository = adherentRepository;
@@ -52,6 +56,8 @@ public class ProlongementService {
         this.exemplaireRepository = exemplaireRepository;
         this.mvtEmpruntRepository = mvtEmpruntRepository;
         this.statutEmpruntRepository = statutEmpruntRepository;
+        this.statutProlongementRepository = statutProlongementRepository;
+        this.mvtProlongementRepository = mvtProlongementRepository;
     }
 
     public List<Prolongement> getAll() {
@@ -141,9 +147,16 @@ public class ProlongementService {
             }
         }
 
+        // Vérification du quota de prolongements
+        ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getId())
+                .orElseThrow(() -> new EmpruntException("Profil d'adhérent introuvable."));
+        int quotaProlongement = profil.getQuotaProlongementPret();
+        long nbProlongementsActifs = prolongementRepository.countActiveProlongementsByEmpruntId(emprunt.getId());
+        if (nbProlongementsActifs >= quotaProlongement) {
+            throw new EmpruntException("Vous avez atteint le quota maximum de prolongements actifs autorisés (" + quotaProlongement + ").");
+        }
+
         // 9. Mettre à jour la date de retour prévue de l'emprunt
-        emprunt.setDateRetourPrevue(prolongement.getDateFin());
-        empruntRepository.save(emprunt);
 
         // 10. Enregistrer le mouvement d'emprunt avec statut 'Prolongé'
         StatutEmprunt statutProlonge = statutEmpruntRepository.findByCodeStatut("Prolongé")
@@ -160,7 +173,52 @@ public class ProlongementService {
         mvtEmpruntRepository.save(mvt);
 
         // 11. Enregistrer le prolongement
-        return prolongementRepository.save(prolongement);
+        Prolongement savedProlongement = prolongementRepository.save(prolongement);
+
+        // Insérer un mouvement 'En attente' lors de la création
+        StatutProlongement statutEnAttente = statutProlongementRepository.findByCodeStatut("En attente")
+            .orElseGet(() -> {
+                StatutProlongement newStatut = new StatutProlongement();
+                newStatut.setCodeStatut("En attente");
+                return statutProlongementRepository.save(newStatut);
+            });
+        MvtProlongement mvtEnAttente = new MvtProlongement();
+        mvtEnAttente.setProlongement(savedProlongement);
+        mvtEnAttente.setStatutNouveau(statutEnAttente);
+        mvtEnAttente.setDateMouvement(prolongement.getDateProlongement());
+        mvtProlongementRepository.save(mvtEnAttente);
+
+        return savedProlongement;
+    }
+
+    @Transactional
+    public void validerProlongement(Integer prolongementId) throws EmpruntException {
+        Prolongement prolongement = prolongementRepository.findById(prolongementId)
+            .orElseThrow(() -> new EmpruntException("Prolongement introuvable."));
+
+        StatutProlongement statut = statutProlongementRepository.findByCodeStatut("Validee")
+            .orElseThrow(() -> new EmpruntException("Statut 'Validee' introuvable."));
+
+        // Vérifier si le dernier mouvement est déjà 'Validee' pour éviter de dupliquer
+        List<MvtProlongement> mouvements = mvtProlongementRepository.findAll();
+        boolean dejaValide = mouvements.stream().anyMatch(m -> m.getProlongement().getId().equals(prolongementId) && m.getStatutNouveau().getCodeStatut().equalsIgnoreCase("Validee"));
+        if (!dejaValide) {
+            // Mettre à jour la date de retour prévue de l'emprunt lors de la validation
+            Emprunt emprunt = prolongement.getEmprunt();
+            emprunt.setDateRetourPrevue(prolongement.getDateFin());
+            empruntRepository.save(emprunt);
+        }
+
+        // Insérer un mouvement à chaque validation
+        MvtProlongement mvt = new MvtProlongement();
+        mvt.setProlongement(prolongement);
+        mvt.setStatutNouveau(statut);
+        mvt.setDateMouvement(LocalDate.now());
+        mvtProlongementRepository.save(mvt);
+    }
+
+    public List<MvtProlongement> getMouvementsForProlongement(Integer prolongementId) {
+        return mvtProlongementRepository.findByProlongementIdOrderByDateMouvementDesc(prolongementId);
     }
 
     // Méthode utilitaire pour obtenir le dernier statut d'un emprunt

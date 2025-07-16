@@ -29,6 +29,13 @@ INSERT INTO Statuts_Emprunt (code_statut) VALUES
 ('Rendu');   
 
 
+INSERT INTO Statuts_Prolongement (code_statut) VALUES 
+('En attente'),     -- La réservation est en attente de traitement
+('Validee'),        -- La réservation a été validée
+('Annulee'),        -- La réservation a été annulée par l'utilisateur ou le personnel
+('Expriree');
+
+
 
 
 
