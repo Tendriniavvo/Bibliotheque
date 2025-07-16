@@ -1,3 +1,4 @@
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
 
@@ -28,3 +29,4 @@
         <p style="font-size: 2em; color: #16a085;">${nbAbonnementsActifs}</p>
     </div>
 </div> 
+

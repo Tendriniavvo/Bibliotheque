@@ -63,7 +63,7 @@ public class AuthController {
 
         Optional<Bibliothecaire> bibliothecaireOpt = bibliothecaireService.findByUtilisateurId(utilisateur.getId());
         if (bibliothecaireOpt.isPresent()) {
-            ModelAndView mv = new ModelAndView("bibliothecaire/template");
+            ModelAndView mv = new ModelAndView("bibliothecaire/templat
             mv.addObject("contentPage", "abonnementListe.jsp");
             mv.addObject("bibliothecaire", bibliothecaireOpt.get());
         
@@ -82,6 +82,7 @@ public class AuthController {
         mv.addObject("livres", livres);
         mv.addObject("adherents", adherents);
         mv.addObject("statuts", statuts);
+
         mv.addObject("profil", adherentOpt.get());
         return mv;
     }

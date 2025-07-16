@@ -23,6 +23,10 @@ public class UtilisateurService {
         return utilisateurRepository.findByEmail(email);
     }
 
+    public Optional<Utilisateur> findById(Integer id) {
+        return utilisateurRepository.findById(id);
+    }
+
     public boolean verifierConnexion(String email, String motDePasse) {
         Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByEmail(email);
         return utilisateurOpt.isPresent() && utilisateurOpt.get().getMotDePasseHash().equals(motDePasse);
