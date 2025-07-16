@@ -13,4 +13,16 @@ public class LivreService {
     public LivreService(LivreRepository repository) {
         this.repository = repository;
     }
+
+    public List<Livre> getAll() {
+        return repository.findAll();
+    }
+
+    public Livre save(Livre livre) {
+        return repository.save(livre);
+    }  
+    
+    public Optional<Livre> findById(Integer id) {
+        return repository.findById(id);
+    }
 }

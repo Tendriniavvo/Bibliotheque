@@ -13,4 +13,16 @@ public class ExemplaireService {
     public ExemplaireService(ExemplaireRepository repository) {
         this.repository = repository;
     }
+
+    public List<Exemplaire> getAll() {
+        return repository.findAll();
+    }
+
+    public Exemplaire save(Exemplaire exemplaire) {
+        return repository.save(exemplaire);
+    }
+    
+    public Optional<Exemplaire> findById(Integer id) {
+        return repository.findById(id);
+    }
 }

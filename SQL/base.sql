@@ -144,7 +144,7 @@ CREATE TABLE Mvt_Emprunt (
     id_mvt_emprunt SERIAL PRIMARY KEY,
     id_emprunt INT NOT NULL,
     id_statut_nouveau INT NOT NULL, -- Le statut vers lequel l'emprunt a transité
-    date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_mouvement DATE,
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE,
     FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Emprunt(id_statut)
 );
@@ -166,12 +166,10 @@ CREATE TABLE Reservations (
     id_reservation SERIAL PRIMARY KEY,
     id_livre INT NOT NULL,
     id_adherent INT NOT NULL,
-    id_statut INT NOT NULL DEFAULT 1,
     date_demande TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_expiration DATE NOT NULL,
+    date_a_reserver DATE NOT NULL,
     FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
-    FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent) ON DELETE CASCADE,
-    FOREIGN KEY (id_statut) REFERENCES Statuts_Reservation(id_statut)
+    FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent) ON DELETE CASCADE
 );
 
 CREATE TABLE Mvt_Reservation (
@@ -194,5 +192,15 @@ CREATE TABLE Penalites (
     raison VARCHAR(255),
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt),
     FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
+);
+
+
+----- Table des prolongements d'emprunt----
+CREATE TABLE Prolongements (
+    id_prolongement SERIAL PRIMARY KEY,
+    id_emprunt INT NOT NULL,
+    date_fin TIMESTAMP NOT NULL,
+    date_prolongement TIMESTAMP NOT NULL,
+    FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE
 );
 

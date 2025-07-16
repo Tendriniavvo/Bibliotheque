@@ -14,7 +14,7 @@ public class AdherentService {
         this.repository = repository;
     }
 
-    public List<Adherent> getAbonnement(){
+    public List<Adherent> getAll(){
         return repository.findAll();
     }
 
@@ -25,5 +25,11 @@ public class AdherentService {
     public Optional<Adherent> findByUtilisateurId(Integer idUtilisateur) {
         return repository.findByIdUtilisateur(idUtilisateur);
     }
+
+
+    public Optional<Adherent> findById(Integer id) {
+        return repository.findById(id);
+    }
+
 
 }

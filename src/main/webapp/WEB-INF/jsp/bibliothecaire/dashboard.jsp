@@ -1,38 +1,32 @@
-            <header class="content-header">
-                <h1>Tableau de bord</h1>
-                <div class="user-info">
-                    <span>Admin</span>
-                    <img src="images/admin-avatar.png" alt="Admin" class="avatar">
-                </div>
-            </header>
 
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <i class="fas fa-users"></i>
-                    <div class="stat-info">
-                        <h3>Utilisateurs</h3>
-                        <p>150</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-book"></i>
-                    <div class="stat-info">
-                        <h3>Livres</h3>
-                        <p>1,250</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-clipboard-list"></i>
-                    <div class="stat-info">
-                        <h3>Emprunts actifs</h3>
-                        <p>48</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-clock"></i>
-                    <div class="stat-info">
-                        <h3>En retard</h3>
-                        <p>12</p>
-                    </div>
-                </div>
-            </div>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+
+<h1>Tableau de bord - Bibliothèque</h1>
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Adhérents</h2>
+        <p style="font-size: 2em; color: #3498db;">${nbAdherents}</p>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Livres</h2>
+        <p style="font-size: 2em; color: #27ae60;">${nbLivres}</p>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Exemplaires</h2>
+        <p style="font-size: 2em; color: #e67e22;">${nbExemplaires}</p>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Emprunts en cours</h2>
+        <p style="font-size: 2em; color: #9b59b6;">${nbEmpruntsEnCours}</p>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Pénalités actives</h2>
+        <p style="font-size: 2em; color: #c0392b;">${nbPenalitesActives}</p>
+    </div>
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-width: 200px;">
+        <h2>Abonnements actifs</h2>
+        <p style="font-size: 2em; color: #16a085;">${nbAbonnementsActifs}</p>
+    </div>
+</div> 
+

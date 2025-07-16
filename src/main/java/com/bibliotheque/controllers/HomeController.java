@@ -27,4 +27,7 @@ public class HomeController {
         mv.addObject("profils", profils); 
         return mv;
     }
+
+    
 }
+    

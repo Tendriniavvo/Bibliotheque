@@ -1,55 +1,57 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="com.bibliotheque.entities.Adherent" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.Optional" %>
-<%
-    Adherent profil = (Adherent) request.getAttribute("profil");
-    String contentPage = (String) request.getAttribute("contentPage");
-%>
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Client - Bibliothèque</title>
-    <link rel="stylesheet" href="css/adherent.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <title>Espace Adhérent</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f8f8; }
+        .sidebar {
+            width: 220px;
+            background: #2c3e50;
+            color: #fff;
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 30px;
+        }
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 30px;
+            display: block;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #34495e;
+        }
+        .main-content {
+            margin-left: 220px;
+            padding: 30px;
+        }
+        .logout {
+            margin-top: auto;
+            background: #c0392b;
+            text-align: center;
+        }
+        .logout a { color: #fff; }
+    </style>
 </head>
 <body>
-    <div class="client-container">
-        <nav class="sidebar">
-            <div class="user-profile">
-                <img src="images/default-avatar.png" alt="Photo de profil" class="profile-img">
-                <h3>Bienvenue, ${profil.nom}</h3>
-            </div>
-            <ul class="nav-links">
-                <li class="active">
-                    <a href="/adherent/dashboard"><i class="fas fa-home"></i>Accueil</a>
-                </li>
-                <li>
-                    <a href="/adherent/catalogue"><i class="fas fa-book"></i>Catalogue</a>
-                </li>
-                <li>
-                    <a href="/adherent/emprunts"><i class="fas fa-list"></i>Mes Emprunts</a>
-                </li>
-                <li>
-                    <a href="/adherent/reservations"><i class="fas fa-bookmark"></i>Mes Réservations</a>
-                </li>
-                <li>
-                    <a href="/adherent/profile"><i class="fas fa-user"></i>Mon Profil</a>
-                </li>
-                <li class="logout">
-                    <a href="/logout"><i class="fas fa-sign-out-alt"></i>Déconnexion</a>
-                </li>
-            </ul>
-        </nav>
-
-        <main class="content">
-            
-            <jsp:include page="<%= contentPage %>" />
-
-        </main>
+    <div class="sidebar">
+        <a href="/adherent/dashboard">Tableau de bord</a>
+        <a href="/adherent/emprunts">Mes emprunts</a>
+        <a href="/adherent/reservations">Mes réservations</a>
+        <a href="/adherent/profil">Mon profil</a>
+        <div class="logout"><a href="/logout">Déconnexion</a></div>
+    </div>
+    <div class="main-content">
+        <jsp:include page="${contentPage}" />
     </div>
 </body>
 </html>

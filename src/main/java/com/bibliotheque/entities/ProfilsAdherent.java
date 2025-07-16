@@ -23,5 +23,19 @@ public class ProfilsAdherent {
     @Column(name = "quota_emprunts_simultanes", nullable = false)
     private Integer quotaEmpruntsSimultanes;
 
+    @ColumnDefault("14")
+    @Column(name = "quota_jours_pret", nullable = false)
+    private Integer quotaJoursPret;
 
+    @ColumnDefault("2")
+    @Column(name = "quota_reservation_livre", nullable = false)
+    private Integer quotaReservationLivre;
+
+    @ColumnDefault("1")
+    @Column(name = "quota_prolongement_pret", nullable = false)
+    private Integer quotaProlongementPret;
+
+    @ColumnDefault("7")
+    @Column(name = "jours_penalite", nullable = false)
+    private Integer joursPenalite;
 }

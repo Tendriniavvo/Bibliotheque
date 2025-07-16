@@ -14,7 +14,11 @@ public class AbonnementService {
         this.repository = repository;
     }
 
-    public List<Abonnement> getAbonnement(){
+    public List<Abonnement> getAll(){
         return repository.findAll();
+    }
+
+    public Abonnement save(Abonnement abonnement) {
+        return repository.save(abonnement);
     }
 }
