@@ -23,4 +23,7 @@ public interface PenaliteRepository extends JpaRepository<Penalite, Integer> {
                      @Param("currentDate") LocalDate currentDate);
 
        public List<Penalite> findByAdherentId(Integer adherentId);
+
+    @Query("SELECT p FROM Penalite p WHERE p.adherent.id = :adherentId ORDER BY p.dateDebut DESC")
+    List<Penalite> findLastPenaliteByAdherent(@Param("adherentId") Integer adherentId);
 }

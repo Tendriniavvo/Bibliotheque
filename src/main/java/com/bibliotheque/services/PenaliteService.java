@@ -30,5 +30,10 @@ public class PenaliteService {
         return empruntService.findById(id);
     }
 
+    public Optional<Penalite> findLastPenaliteByAdherent(Integer adherentId) {
+        List<Penalite> penalites = repository.findLastPenaliteByAdherent(adherentId);
+        if (penalites == null || penalites.isEmpty()) return Optional.empty();
+        return Optional.of(penalites.get(0));
+    }
 
 }

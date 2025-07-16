@@ -64,10 +64,23 @@ public class PenaliteController {
             return "redirect:/penalite/form?error=empruntNotFound";
         }
 
+        LocalDate dateDebutPenalite = LocalDate.parse(dateDebut);
+
+        // Vérifier la dernière pénalité de l'adhérent
+        Optional<Penalite> lastPenaliteOpt = penaliteService.findLastPenaliteByAdherent(idAdherent);
+        if (lastPenaliteOpt.isPresent()) {
+            Penalite lastPenalite = lastPenaliteOpt.get();
+            LocalDate lastFin = lastPenalite.getDateDebut().plusDays(lastPenalite.getJour());
+            // Si la nouvelle pénalité commence avant la fin de la dernière, on la décale
+            if (!dateDebutPenalite.isAfter(lastFin)) {
+                dateDebutPenalite = lastFin;
+            }
+        }
+
         Penalite penalite = new Penalite();
         penalite.setAdherent(adherentOpt.get());
         penalite.setEmprunt(empruntOpt.get());
-        penalite.setDateDebut(LocalDate.parse(dateDebut));
+        penalite.setDateDebut(dateDebutPenalite);
         penalite.setJour(jour);
         penalite.setRaison(raison);
 
