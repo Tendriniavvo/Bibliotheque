@@ -18,6 +18,8 @@ public interface MvtEmpruntRepository extends JpaRepository<MvtEmprunt, Integer>
 
     public Optional<MvtEmprunt> findTopByEmpruntIdOrderByDateMouvementDesc(Integer empruntId);
 
+    public Optional<MvtEmprunt> findTopByEmpruntIdOrderByIdDesc(Integer empruntId);
+
     @Query("SELECT m FROM MvtEmprunt m WHERE m.emprunt.id = :empruntId ORDER BY m.dateMouvement DESC")
     Optional<MvtEmprunt> findDernierStatutByEmpruntId(@Param("empruntId") Integer empruntId);
 

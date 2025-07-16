@@ -131,11 +131,11 @@ public class EmpruntService {
         TypeEmprunt typeEmprunt = typeEmpruntRepository.findById(emprunt.getTypeEmprunt().getId())
                 .orElseThrow(() -> new EmpruntException("Le type d'emprunt spécifié n'existe pas."));
 
-        // Vérification des jours fériés
-        if (joursFeriesRepository.existsByDateFerie(dateEmprunt)
-                || joursFeriesRepository.existsByDateFerie(dateRetourPrevue)) {
-            throw new EmpruntException("L'emprunt ou le retour prévu tombe sur un jour férié.");
-        }
+        // // Vérification des jours fériés
+        // if (joursFeriesRepository.existsByDateFerie(dateEmprunt)
+        //         || joursFeriesRepository.existsByDateFerie(dateRetourPrevue)) {
+        //     throw new EmpruntException("L'emprunt ou le retour prévu tombe sur un jour férié.");
+        // }
 
         // Vérification des réservations
         List<Reservation> reservations = reservationRepository.findByLivreId(exemplaire.getLivre().getId());
@@ -150,6 +150,16 @@ public class EmpruntService {
         }
         if (emprunt.getDateRetourPrevue() == null || !emprunt.getDateRetourPrevue().isAfter(emprunt.getDateEmprunt())) {
             throw new EmpruntException("La date de retour prévue doit être postérieure à la date d'emprunt.");
+        }
+
+        // Décaler la date d'emprunt si c'est un jour férié
+        while (joursFeriesRepository.existsByDateFerie(emprunt.getDateEmprunt())) {
+            emprunt.setDateEmprunt(emprunt.getDateEmprunt().plusDays(1));
+        }
+
+        // Décaler la date de retour prévue si c'est un jour férié
+        while (joursFeriesRepository.existsByDateFerie(emprunt.getDateRetourPrevue())) {
+            emprunt.setDateRetourPrevue(emprunt.getDateRetourPrevue().plusDays(1));
         }
 
         // Décrémentation de la quantité de l'exemplaire
@@ -209,6 +219,11 @@ public class EmpruntService {
         //     throw new EmpruntException("Le retour ne peut pas être effectué un jour férié");
         // }
 
+        // Décaler la date de retour effective si c'est un jour férié
+        while (joursFeriesRepository.existsByDateFerie(dateRetourEffective)) {
+            dateRetourEffective = dateRetourEffective.plusDays(1);
+        }
+
         // 5. Récupérer l'exemplaire pour remettre à jour la quantité
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
                 .orElseThrow(() -> new EmpruntException("L'exemplaire associé à l'emprunt n'existe plus"));
@@ -226,12 +241,35 @@ public class EmpruntService {
             long joursRetard = java.time.temporal.ChronoUnit.DAYS.between(emprunt.getDateRetourPrevue(),
                     dateRetourEffective);
 
+            // Récupérer le quota joursPenalite du profil de l'adhérent
+            Integer joursPenalite = null;
+            if (adherent.getIdProfil() != null) {
+                Optional<ProfilsAdherent> profilOpt = profilAdherentRepository.findById(adherent.getIdProfil());
+                if (profilOpt.isPresent()) {
+                    joursPenalite = profilOpt.get().getJoursPenalite();
+                }
+            }
+            if (joursPenalite == null) {
+                joursPenalite = 1; // Valeur par défaut si non trouvée
+            }
+
+            // Récupérer la dernière pénalité de l'adhérent
+            List<Penalite> lastPenalites = penaliteRepository.findLastPenaliteByAdherent(adherent.getId());
+            LocalDate dateDebutPenalite = dateRetourEffective;
+            if (lastPenalites != null && !lastPenalites.isEmpty()) {
+                Penalite lastPenalite = lastPenalites.get(0);
+                LocalDate lastFin = lastPenalite.getDateDebut().plusDays(lastPenalite.getJour());
+                if (!dateRetourEffective.isAfter(lastFin)) {
+                    dateDebutPenalite = lastFin;
+                }
+            }
+
             // Créer une pénalité
             Penalite penalite = new Penalite();
             penalite.setEmprunt(emprunt);
             penalite.setAdherent(adherent);
-            penalite.setDateDebut(dateRetourEffective);
-            penalite.setJour((int) joursRetard);
+            penalite.setDateDebut(dateDebutPenalite);
+            penalite.setJour(joursPenalite);
             penalite.setRaison("Retard de " + joursRetard + " jour(s) pour l'emprunt ID " + empruntId);
             penaliteRepository.save(penalite);
         }

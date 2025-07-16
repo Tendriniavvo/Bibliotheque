@@ -159,10 +159,10 @@ public class ProlongementService {
         // 9. Mettre à jour la date de retour prévue de l'emprunt
 
         // 10. Enregistrer le mouvement d'emprunt avec statut 'Prolongé'
-        StatutEmprunt statutProlonge = statutEmpruntRepository.findByCodeStatut("Prolongé")
+        StatutEmprunt statutProlonge = statutEmpruntRepository.findByCodeStatut("Prolonge")
                 .orElseGet(() -> {
                     StatutEmprunt newStatut = new StatutEmprunt();
-                    newStatut.setCodeStatut("Prolongé");
+                    newStatut.setCodeStatut("Prolonge");
 
                     return statutEmpruntRepository.save(newStatut);
                 });

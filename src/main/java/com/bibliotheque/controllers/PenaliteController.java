@@ -26,6 +26,9 @@ public class PenaliteController {
     @Autowired
     private PenaliteService penaliteService;
 
+    @Autowired
+    private ProfilsAdherentService profilsAdherentService;
+
     @GetMapping("/liste")
     public ModelAndView listePenalite() {
         List<Penalite> penalites = penaliteService.getAll();
@@ -51,7 +54,7 @@ public class PenaliteController {
             @RequestParam("idEmprunt") Integer idEmprunt,
             @RequestParam("idAdherent") Integer idAdherent,
             @RequestParam("dateDebut") String dateDebut,
-            @RequestParam("jour") Integer jour,
+            //@RequestParam("jour") Integer jour, // ignoré, remplacé par le quota du profil
             @RequestParam(value = "raison", required = false) String raison) {
 
         Optional<Adherent> adherentOpt = adherentService.findById(idAdherent);
@@ -64,24 +67,24 @@ public class PenaliteController {
             return "redirect:/penalite/form?error=empruntNotFound";
         }
 
-        LocalDate dateDebutPenalite = LocalDate.parse(dateDebut);
-
-        // Vérifier la dernière pénalité de l'adhérent
-        Optional<Penalite> lastPenaliteOpt = penaliteService.findLastPenaliteByAdherent(idAdherent);
-        if (lastPenaliteOpt.isPresent()) {
-            Penalite lastPenalite = lastPenaliteOpt.get();
-            LocalDate lastFin = lastPenalite.getDateDebut().plusDays(lastPenalite.getJour());
-            // Si la nouvelle pénalité commence avant la fin de la dernière, on la décale
-            if (!dateDebutPenalite.isAfter(lastFin)) {
-                dateDebutPenalite = lastFin;
+        // Récupérer le quota joursPenalite du profil de l'adhérent
+        Adherent adherent = adherentOpt.get();
+        Integer joursPenalite = null;
+        if (adherent.getIdProfil() != null) {
+            Optional<ProfilsAdherent> profilOpt = profilsAdherentService.repository.findById(adherent.getIdProfil());
+            if (profilOpt.isPresent()) {
+                joursPenalite = profilOpt.get().getJoursPenalite();
             }
+        }
+        if (joursPenalite == null) {
+            joursPenalite = 1; // Valeur par défaut si non trouvée
         }
 
         Penalite penalite = new Penalite();
         penalite.setAdherent(adherentOpt.get());
         penalite.setEmprunt(empruntOpt.get());
-        penalite.setDateDebut(dateDebutPenalite);
-        penalite.setJour(jour);
+        penalite.setDateDebut(LocalDate.parse(dateDebut));
+        penalite.setJour(joursPenalite);
         penalite.setRaison(raison);
 
         penaliteService.save(penalite);
