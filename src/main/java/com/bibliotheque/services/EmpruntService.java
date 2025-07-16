@@ -97,6 +97,15 @@ public class EmpruntService {
             throw new EmpruntException("L'adhérent a atteint ou dépassé son quota d'emprunts simultanés (" + quotaMax + "). Quota restant : 0");
         }
 
+        // Vérification du quota de jours de prêt
+        int quotaJoursPret = profil.getQuotaJoursPret();
+        long dureeEmprunt = java.time.temporal.ChronoUnit.DAYS.between(emprunt.getDateEmprunt(), emprunt.getDateRetourPrevue()) + 1;
+        if (dureeEmprunt > quotaJoursPret) {
+            throw new EmpruntException(
+                "La durée de l'emprunt demandée (" + dureeEmprunt + " jours) dépasse le quota autorisé par votre profil (" + quotaJoursPret + " jours)."
+            );
+        }
+
         // Vérification de l'exemplaire
         Exemplaire exemplaire = exemplaireRepository.findById(emprunt.getExemplaire().getId())
                 .orElseThrow(() -> new EmpruntException("L'exemplaire spécifié n'existe pas."));

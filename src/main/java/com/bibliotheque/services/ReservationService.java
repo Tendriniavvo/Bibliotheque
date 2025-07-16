@@ -85,6 +85,23 @@ public class ReservationService {
 
         ProfilsAdherent profil = profilAdherentRepository.findById(adherent.getIdProfil())
                 .orElseThrow(() -> new ReservationException("Le profil de l'adhérent n'existe pas."));
+
+        // Vérification du quota de jours de prêt
+        int quotaJoursPret = profil.getQuotaJoursPret();
+        long dureeReservation = java.time.temporal.ChronoUnit.DAYS.between(reservation.getDateDemande(), reservation.getDateAReserver()) + 1;
+        if (dureeReservation > quotaJoursPret) {
+            throw new ReservationException(
+                "La durée de la réservation demandée (" + dureeReservation + " jours) dépasse le quota autorisé par votre profil (" + quotaJoursPret + " jours)."
+            );
+        }
+
+        // Vérification du quota de réservations de livres
+        int quotaReservationLivre = profil.getQuotaReservationLivre();
+        long nbReservationsActives = reservationRepository.countActiveReservationsByAdherent(adherent.getId(), dateAReserver);
+        if (nbReservationsActives >= quotaReservationLivre) {
+            throw new ReservationException("L'adhérent a déjà atteint son quota de réservations simultanées (" + quotaReservationLivre + ").");
+        }
+
         long reservationsActives = reservationRepository.countActiveReservationsByAdherent(adherent.getId(), dateAReserver);
         if (reservationsActives >= profil.getQuotaEmpruntsSimultanes()) {
             throw new ReservationException("L'adhérent a déjà atteint son quota de réservations simultanées.");

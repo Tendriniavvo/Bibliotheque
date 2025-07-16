@@ -195,3 +195,17 @@ CREATE TABLE Prolongements (
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE
 );
 
+CREATE TABLE Statuts_Prolongement (
+    id_statut SERIAL PRIMARY KEY,
+    code_statut VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE Mvt_Prolongement (
+    id_mvt_prolongement SERIAL PRIMARY KEY,
+    id_prolongement INT NOT NULL,
+    id_statut_nouveau INT NOT NULL,
+    date_mouvement DATE,
+    FOREIGN KEY (id_prolongement) REFERENCES Prolongements(id_prolongement) ON DELETE CASCADE,
+    FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Prolongement(id_statut)
+);
+
