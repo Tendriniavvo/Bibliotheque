@@ -1,8 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+
     <title>Espace Adhérent</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f8f8; }
